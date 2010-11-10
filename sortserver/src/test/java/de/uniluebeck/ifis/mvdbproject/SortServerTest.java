@@ -6,7 +6,7 @@ import java.util.ArrayList;
 
 import de.uniluebeck.ifis.mvdbproject.Server;
 
-public class SortServer {
+public class SortServerTest {
 	List<String> unsorted;
 
 	@Before
@@ -20,7 +20,7 @@ public class SortServer {
 
 	@Test
 	public void testAddMethod() {
-		Server server = new Server();
+		Server server = Server.getInstance();
 		for (String s : this.unsorted) {
 			server.add(s);
 		}
