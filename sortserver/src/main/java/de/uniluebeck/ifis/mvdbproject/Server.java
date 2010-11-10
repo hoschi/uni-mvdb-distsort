@@ -16,7 +16,7 @@ public final class Server {
 	 * werden. 
 	 */
     private Server() {
-		this.unsorted = new ArrayList();
+		this.list = new ArrayList();
 	}
 
 	/**
@@ -32,19 +32,19 @@ public final class Server {
 
 	/****************** Singleton stuff *******************/
 
-	protected List<String> unsorted;
+	protected List<String> list;
 	protected ISorter sorter;
 
 	public void add(String s) {
-		this.unsorted.add(s);
+		this.list.add(s);
 	}
 	
 	public void clear() {
-		this.unsorted.clear();
+		this.list.clear();
 	}
 
 	public List<String> getList() {
-		return this.unsorted;
+		return this.list;
 	}
 
 	public void setSorter(ISorter sorter) {
@@ -52,6 +52,10 @@ public final class Server {
 	}
 
 	public void sort() {
+		if (this.sorter != null) {
+			this.sorter.setList(this.list);
+			this.sorter.sort();
+		}
 	}
 
 }

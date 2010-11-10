@@ -1,13 +1,13 @@
 package de.uniluebeck.ifis.mvdbproject;
 
 import org.junit.*;
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
 
 import de.uniluebeck.ifis.mvdbproject.*;
 
 public class SortServerTest {
 	List<String> unsorted;
+	List<String> sorted;
 	Server server;
 
 	class DummySorter extends ASorter {
@@ -17,7 +17,7 @@ public class SortServerTest {
 
 	class LocalSorter extends ASorter {
 		public void sort() {
-			this.
+			Collections.sort(this.list, String.CASE_INSENSITIVE_ORDER);
 		}
 	}
 
@@ -28,6 +28,12 @@ public class SortServerTest {
 		this.unsorted.add("d");
 		this.unsorted.add("c");
 		this.unsorted.add("b");
+
+		this.sorted = new ArrayList<String>();
+		this.sorted.add("a");
+		this.sorted.add("b");
+		this.sorted.add("c");
+		this.sorted.add("d");
 
 		server = Server.getInstance();
 		for (String s : this.unsorted) {
@@ -53,6 +59,11 @@ public class SortServerTest {
 		server.sort();
 		Assert.assertArrayEquals("server list and local list aren't equal",
 				this.unsorted.toArray(), server.getList().toArray());
+
+		server.setSorter(new LocalSorter());
+		server.sort();
+		Assert.assertArrayEquals("server list and local list aren't equal",
+				this.sorted.toArray(), server.getList().toArray());
 	}
 
 }
