@@ -33,12 +33,25 @@ public final class Server {
 	/****************** Singleton stuff *******************/
 
 	protected List<String> unsorted;
+	protected ISorter sorter;
 
 	public void add(String s) {
 		this.unsorted.add(s);
+	}
+	
+	public void clear() {
+		this.unsorted.clear();
 	}
 
 	public List<String> getList() {
 		return this.unsorted;
 	}
+
+	public void setSorter(ISorter sorter) {
+		this.sorter = sorter;
+	}
+
+	public void sort() {
+	}
+
 }

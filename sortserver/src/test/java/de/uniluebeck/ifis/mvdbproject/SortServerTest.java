@@ -15,6 +15,12 @@ public class SortServerTest {
 		}
 	}
 
+	class LocalSorter extends ASorter {
+		public void sort() {
+			this.
+		}
+	}
+
 	@Before
 	public void setUp() throws Exception {
 		this.unsorted = new ArrayList<String>();
@@ -29,6 +35,11 @@ public class SortServerTest {
 		}
 	}
 
+	@After
+	public void tearDown() throws Exception {
+		server.clear();
+	}
+
 	@Test
 	public void testAdd() {
 		List<String> list = server.getList();
@@ -41,7 +52,7 @@ public class SortServerTest {
 		server.setSorter(new DummySorter());
 		server.sort();
 		Assert.assertArrayEquals("server list and local list aren't equal",
-				this.unsorted.toArray(), list.toArray());
+				this.unsorted.toArray(), server.getList().toArray());
 	}
 
 }
