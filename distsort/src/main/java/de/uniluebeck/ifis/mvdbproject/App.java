@@ -1,4 +1,4 @@
-package de.uni-luebeck.ifis.mvdbproject;
+package de.uniluebeck.ifis.mvdbproject;
 
 /**
  * Hello world!

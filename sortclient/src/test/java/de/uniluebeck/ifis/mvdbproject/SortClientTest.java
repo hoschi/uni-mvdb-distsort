@@ -3,7 +3,6 @@ package de.uniluebeck.ifis.mvdbproject;
 import org.junit.*;
 import java.util.*;
 
-import de.uniluebeck.ifis.mvdbproject.*;
 
 public class SortClientTest {
 	List<String> unsorted;
