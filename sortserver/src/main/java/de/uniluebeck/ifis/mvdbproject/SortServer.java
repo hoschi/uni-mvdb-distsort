@@ -17,6 +17,7 @@ public class SortServer {
 	 */
     private SortServer() {
 		this.list = new ArrayList();
+		this.clients = new ArrayList();
 	}
 
 	/**
@@ -33,6 +34,7 @@ public class SortServer {
 	/****************** Singleton stuff *******************/
 
 	private List<String> list;
+	private List<ISortClient> clients;
 	private ISorter sorter;
 	private int blockSize;
 
@@ -68,8 +70,9 @@ public class SortServer {
 		}
 	}
 
-	void addClient(SortClient client) {
-		
+	public void addClient(ISortClient client) {
+		this.clients.add(client);
+		System.out.println("new client added");
 	}
 
 	List<String> sortByClient(List<String> unsorted) {

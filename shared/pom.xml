@@ -9,20 +9,13 @@
 		<version>1.0-SNAPSHOT</version>
 		<relativePath>../distsort</relativePath>
 	</parent>
-
+	
 	<groupId>de.uniluebeck.ifis.mvdbproject</groupId>
-	<artifactId>sortserver</artifactId>
+	<artifactId>shared</artifactId>
 	<version>1.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>sortserver</name>
+	<name>shared</name>
 	<url>http://maven.apache.org</url>
 
-	<dependencies>
-		<dependency>
-			<groupId>de.uniluebeck.ifis.mvdbproject</groupId>
-			<artifactId>shared</artifactId>
-			<version>1.0-SNAPSHOT</version>
-		</dependency>
-	</dependencies>
 </project>

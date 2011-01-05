@@ -1,5 +1,6 @@
 package de.uniluebeck.ifis.mvdbproject;
 
+import java.rmi.RemoteException;
 import org.junit.*;
 import java.util.*;
 
@@ -24,13 +25,11 @@ public class SortClientTest {
 	}
 
 	@Test
-	public void testSort() {
+	public void testSort() throws RemoteException {
 		SortClient client = new SortClient();
-		client.setList(unsorted);
-
-		client.sort();
+		List<String> sort = client.sort(unsorted);
 		Assert.assertArrayEquals("client list and local list aren't equal",
-				this.sorted.toArray(), client.getList().toArray());
+				this.sorted.toArray(), sort.toArray());
 
 	}
 

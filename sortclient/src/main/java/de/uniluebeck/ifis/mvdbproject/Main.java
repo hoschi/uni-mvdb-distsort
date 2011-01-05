@@ -13,7 +13,7 @@ public class Main {
 
 	public static void main(String[] args) {
 		System.out.println("adding me to server on //localhost:1198/sortserver");
-		//SortServer server = Remote.getItem("//localhost:1198/sortserver");
+		
 		System.out.println("SUCCESS!");
 	}
 }

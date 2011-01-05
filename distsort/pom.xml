@@ -18,16 +18,8 @@
 	<modules>
 		<module>../sortserver</module>
 		<module>../sortclient</module>
+		<module>../shared</module>
 	</modules>
-
-	<repositories>
-		<repository>
-			<id>eviware</id>
-			<name>eviware</name>
-			<layout>default</layout>
-			<url>http://www.eviware.com/repository/maven2/</url>
-		</repository>
-	</repositories>
 
 	<dependencies>
 		<dependency>
@@ -36,16 +28,27 @@
 			<version>4.8.2</version>
 			<scope>test</scope>
 		</dependency>
-				<dependency>
+		<dependency>
 			<groupId>org.easymock</groupId>
 			<artifactId>easymock</artifactId>
 			<version>3.0</version>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>gnu.cajo</groupId>
-			<artifactId>cajo</artifactId>
-			<version>1.142</version>
-		</dependency>
 	</dependencies>
+
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<!-- best lock down version of the plugin too -->
+					<configuration>
+						<source>1.6</source>
+						<target>1.6</target>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
 </project>
