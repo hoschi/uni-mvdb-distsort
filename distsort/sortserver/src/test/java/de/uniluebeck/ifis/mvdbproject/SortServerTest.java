@@ -1,7 +1,10 @@
 package de.uniluebeck.ifis.mvdbproject;
 
+import java.rmi.RemoteException;
 import static org.junit.Assert.*;
+import static org.easymock.EasyMock.*;
 import java.util.*;
+import org.easymock.IAnswer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -66,7 +69,24 @@ public class SortServerTest {
 	}
 
 	@Test
-	public void testSortByClient() {
-		fail("not implemented");
+	public void testSortByClient() throws RemoteException {
+		ISortClient mock = createMock(ISortClient.class);
+		expect(mock.sort(this.unsorted))
+				.andAnswer(new IAnswer<List<String>>() {
+
+			public List<String> answer() throws Throwable {
+				LocalSorter l = new LocalSorter();
+				l.setList((List<String>) getCurrentArguments()[0]);
+				l.sort();
+				return l.getSortedList();
+			}
+		});
+		replay(mock);
+		
+		server.addClient(mock);
+		List<String> sort = server.sortByClient(unsorted);
+		assertArrayEquals("server list and local list aren't equal",
+				this.sorted.toArray(), sort.toArray());
+		verify(mock);
 	}
 }

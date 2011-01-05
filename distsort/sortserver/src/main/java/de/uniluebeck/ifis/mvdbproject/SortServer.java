@@ -1,8 +1,13 @@
 package de.uniluebeck.ifis.mvdbproject;
 
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-public class SortServer {
+public class SortServer extends UnicastRemoteObject implements ISortServer {
 
 	/****************** Singleton stuff *******************/
 	/**
@@ -15,7 +20,8 @@ public class SortServer {
 	 * Konstruktor ist privat, Klasse darf nicht von außen instanziiert
 	 * werden. 
 	 */
-    private SortServer() {
+    private SortServer() throws RemoteException {
+		super();
 		this.list = new ArrayList();
 		this.clients = new ArrayList();
 	}
@@ -24,7 +30,7 @@ public class SortServer {
 	 * Statische Methode "getInstance()" liefert die einzige Instanz der Klasse
 	 * zurück. Ist synchronisiert und somit thread-sicher.
 	 */
-	public synchronized static SortServer getInstance() {
+	public synchronized static SortServer getInstance() throws RemoteException {
 		if (instance == null) {
 			instance = new SortServer();
 		}
@@ -37,6 +43,7 @@ public class SortServer {
 	private List<ISortClient> clients;
 	private ISorter sorter;
 	private int blockSize;
+	private int lastClient = 0;
 
 	public int getBlockSize() {
 		return blockSize;
@@ -70,13 +77,24 @@ public class SortServer {
 		}
 	}
 
-	public void addClient(ISortClient client) {
+	@Override
+	public void addClient(ISortClient client) throws RemoteException {
 		this.clients.add(client);
 		System.out.println("new client added");
 	}
 
-	List<String> sortByClient(List<String> unsorted) {
-		throw new UnsupportedOperationException("Not yet implemented");
+	public List<String> sortByClient(List<String> unsorted) {
+		int next = ++this.lastClient;
+		if (next >= this.clients.size()) {
+			next = 0;
+		}
+		ISortClient client = this.clients.get(next);
+		try {
+			return client.sort(unsorted);
+		} catch (RemoteException ex) {
+			Logger.getLogger(SortServer.class.getName()).log(Level.SEVERE, null, ex);
+		}
+		return null;
 	}
 
 }
