@@ -16,9 +16,9 @@
 	</properties>
 
 	<modules>
-		<module>../sortserver</module>
-		<module>../sortclient</module>
-		<module>../shared</module>
+		<module>sortserver</module>
+		<module>sortclient</module>
+		<module>shared</module>
 	</modules>
 
 	<dependencies>

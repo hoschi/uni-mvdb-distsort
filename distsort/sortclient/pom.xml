@@ -7,7 +7,7 @@
 		<groupId>de.uniluebeck.ifis.mvdbproject</groupId>
 		<artifactId>distsort</artifactId>
 		<version>1.0-SNAPSHOT</version>
-		<relativePath>../distsort</relativePath>
+		<relativePath>..</relativePath>
 	</parent>
 	
 	<groupId>de.uniluebeck.ifis.mvdbproject</groupId>
