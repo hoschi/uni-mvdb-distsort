@@ -1,14 +1,16 @@
 package de.uniluebeck.ifis.mvdbproject;
 
-import org.junit.*;
+import static org.junit.Assert.*;
 import java.util.*;
-import static org.easymock.EasyMock.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 
 public class SortServerTest {
 	List<String> unsorted;
 	List<String> sorted;
-	Server server;
+	SortServer server;
 
 	class DummySorter extends ASorter {
 		public DummySorter() {
@@ -32,7 +34,7 @@ public class SortServerTest {
 		this.sorted.add("c");
 		this.sorted.add("d");
 
-		server = Server.getInstance();
+		server = SortServer.getInstance();
 		for (String s : this.unsorted) {
 			server.add(s);
 		}
@@ -46,7 +48,7 @@ public class SortServerTest {
 	@Test
 	public void testAddElementsToSort() {
 		List<String> list = server.getList();
-		Assert.assertArrayEquals("server list and local list aren't equal",
+		assertArrayEquals("server list and local list aren't equal",
 				this.unsorted.toArray(), list.toArray());
 	}
 
@@ -54,12 +56,17 @@ public class SortServerTest {
 	public void testSettingDifferentSorter() {
 		server.setSorter(new DummySorter());
 		server.sort();
-		Assert.assertArrayEquals("server list and local list aren't equal",
+		assertArrayEquals("server list and local list aren't equal",
 				this.unsorted.toArray(), server.getList().toArray());
 
 		server.setSorter(new LocalSorter());
 		server.sort();
-		Assert.assertArrayEquals("server list and local list aren't equal",
+		assertArrayEquals("server list and local list aren't equal",
 				this.sorted.toArray(), server.getList().toArray());
+	}
+
+	@Test
+	public void testSortByClient() {
+		fail("not implemented");
 	}
 }

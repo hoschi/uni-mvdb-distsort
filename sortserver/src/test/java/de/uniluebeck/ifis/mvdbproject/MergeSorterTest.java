@@ -61,7 +61,7 @@ public class MergeSorterTest {
 	public void testSort() {
 		// setup
 		LocalSorter l = new LocalSorter();
-		Server server = createMock(Server.class);
+		SortServer server = createMock(SortServer.class);
 		expect(server.getBlockSize()).andReturn(2);
 		expectLastCall().anyTimes();
 		expect(server.sortByClient(anyObject(List.class)))

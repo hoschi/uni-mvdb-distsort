@@ -14,7 +14,7 @@ import java.util.List;
  */
 public class MergeSorter extends ASorter {
 
-	public MergeSorter(Server server) {
+	public MergeSorter(SortServer server) {
 		super(server);
 	}
 

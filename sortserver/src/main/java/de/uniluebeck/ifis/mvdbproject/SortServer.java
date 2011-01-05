@@ -2,20 +2,20 @@ package de.uniluebeck.ifis.mvdbproject;
 
 import java.util.*;
 
-public class Server {
+public class SortServer {
 
 	/****************** Singleton stuff *******************/
 	/**
 	 * Privates Klassenattribut, wird beim erstmaligen Gebrauch (nicht beim
 	 * Laden) der Klasse erzeugt
      */
-    private static Server instance;
+    private static SortServer instance;
 
 	/** 
 	 * Konstruktor ist privat, Klasse darf nicht von außen instanziiert
 	 * werden. 
 	 */
-    private Server() {
+    private SortServer() {
 		this.list = new ArrayList();
 	}
 
@@ -23,17 +23,26 @@ public class Server {
 	 * Statische Methode "getInstance()" liefert die einzige Instanz der Klasse
 	 * zurück. Ist synchronisiert und somit thread-sicher.
 	 */
-	public synchronized static Server getInstance() {
+	public synchronized static SortServer getInstance() {
 		if (instance == null) {
-			instance = new Server();
+			instance = new SortServer();
 		}
 		return instance;
 	}
 
 	/****************** Singleton stuff *******************/
 
-	protected List<String> list;
-	protected ISorter sorter;
+	private List<String> list;
+	private ISorter sorter;
+	private int blockSize;
+
+	public int getBlockSize() {
+		return blockSize;
+	}
+
+	public void setBlockSize(int blockSize) {
+		this.blockSize = blockSize;
+	}
 
 	public void add(String s) {
 		this.list.add(s);
@@ -61,10 +70,6 @@ public class Server {
 
 	void addClient(SortClient client) {
 		
-	}
-
-	int getBlockSize() {
-		throw new UnsupportedOperationException("Not yet implemented");
 	}
 
 	List<String> sortByClient(List<String> unsorted) {

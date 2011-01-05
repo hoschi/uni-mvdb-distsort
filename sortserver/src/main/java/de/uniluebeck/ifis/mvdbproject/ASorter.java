@@ -5,7 +5,7 @@ import java.util.List;
 public abstract class ASorter implements ISorter {
 
 	protected List<String> list;
-	protected Server server;
+	protected SortServer server;
 
 	public void setList(List<String> list) {
 		this.list = list;
@@ -15,7 +15,7 @@ public abstract class ASorter implements ISorter {
 		return this.list;
 	}
 
-	protected ASorter(Server server) {
+	protected ASorter(SortServer server) {
 		this.server = server;
 	}
 }
