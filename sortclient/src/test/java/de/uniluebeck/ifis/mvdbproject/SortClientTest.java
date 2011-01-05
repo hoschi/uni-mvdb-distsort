@@ -25,7 +25,7 @@ public class SortClientTest {
 
 	@Test
 	public void testSort() {
-		Client client = new Client();
+		SortClient client = new SortClient();
 		client.setList(unsorted);
 
 		client.sort();

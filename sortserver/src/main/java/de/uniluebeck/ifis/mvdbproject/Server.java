@@ -2,7 +2,7 @@ package de.uniluebeck.ifis.mvdbproject;
 
 import java.util.*;
 
-public final class Server {
+public class Server {
 
 	/****************** Singleton stuff *******************/
 	/**
@@ -55,7 +55,20 @@ public final class Server {
 		if (this.sorter != null) {
 			this.sorter.setList(this.list);
 			this.sorter.sort();
+			this.list = sorter.getSortedList();
 		}
+	}
+
+	void addClient(SortClient client) {
+		
+	}
+
+	int getBlockSize() {
+		throw new UnsupportedOperationException("Not yet implemented");
+	}
+
+	List<String> sortByClient(List<String> unsorted) {
+		throw new UnsupportedOperationException("Not yet implemented");
 	}
 
 }

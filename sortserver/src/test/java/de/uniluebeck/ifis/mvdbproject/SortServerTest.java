@@ -2,8 +2,8 @@ package de.uniluebeck.ifis.mvdbproject;
 
 import org.junit.*;
 import java.util.*;
+import static org.easymock.EasyMock.*;
 
-import de.uniluebeck.ifis.mvdbproject.*;
 
 public class SortServerTest {
 	List<String> unsorted;
@@ -11,13 +11,10 @@ public class SortServerTest {
 	Server server;
 
 	class DummySorter extends ASorter {
-		public void sort() {
+		public DummySorter() {
+			super(null);
 		}
-	}
-
-	class LocalSorter extends ASorter {
 		public void sort() {
-			Collections.sort(this.list, String.CASE_INSENSITIVE_ORDER);
 		}
 	}
 
@@ -47,14 +44,14 @@ public class SortServerTest {
 	}
 
 	@Test
-	public void testAdd() {
+	public void testAddElementsToSort() {
 		List<String> list = server.getList();
 		Assert.assertArrayEquals("server list and local list aren't equal",
 				this.unsorted.toArray(), list.toArray());
 	}
 
 	@Test
-	public void testSort() {
+	public void testSettingDifferentSorter() {
 		server.setSorter(new DummySorter());
 		server.sort();
 		Assert.assertArrayEquals("server list and local list aren't equal",
@@ -65,5 +62,4 @@ public class SortServerTest {
 		Assert.assertArrayEquals("server list and local list aren't equal",
 				this.sorted.toArray(), server.getList().toArray());
 	}
-
 }

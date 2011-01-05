@@ -2,7 +2,7 @@ package de.uniluebeck.ifis.mvdbproject;
 
 import java.util.*;
 
-public class Client {
+public class SortClient {
 	protected List<String> list;
 	
 	public List<String> getList() {
