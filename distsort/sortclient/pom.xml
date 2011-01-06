@@ -26,4 +26,36 @@
 		</dependency>
 	</dependencies>
 
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifest>
+							<mainClass>de.uniluebeck.ifis.mvdbproject.Main</mainClass>
+							<packageName>de.uniluebeck.ifis.mvdbproject</packageName>
+						</manifest>
+					</archive>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.dstovall</groupId>
+				<artifactId>onejar-maven-plugin</artifactId>
+				<version>1.4.4</version>
+				<executions>
+					<execution>
+						<configuration>
+                            <!-- Optional, default is false -->
+							<attachToBuild>true</attachToBuild>
+						</configuration>
+						<goals>
+							<goal>one-jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
 </project>
