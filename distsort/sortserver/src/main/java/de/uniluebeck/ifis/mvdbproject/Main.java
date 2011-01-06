@@ -5,8 +5,13 @@
 package de.uniluebeck.ifis.mvdbproject;
 
 import java.rmi.Naming;
+import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -25,6 +30,40 @@ public class Main {
 			throw new RuntimeException(exception);
 		}
 		System.out.println("The server is running!");
+
+		mergesort();
+	}
+
+	private static void mergesort() {
+		SortServer server = null;
+		try {
+			server = SortServer.getInstance();
+		} catch (RemoteException ex) {
+			Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+		}
+
+		server.setBlockSize(4);
+		server.setSorter(new MergeSorter(server));
 		
+		server.add("a");
+		server.add("d");
+		server.add("c");
+		server.add("b");
+		server.add("a");
+		server.add("d");
+		server.add("c");
+		server.add("b");
+		server.add("a");
+		server.add("d");
+		server.add("c");
+		server.add("b");
+		server.add("a");
+		server.add("d");
+		server.add("c");
+		server.add("b");
+
+		server.sort();
+		System.out.println(server.getList());
+
 	}
 }

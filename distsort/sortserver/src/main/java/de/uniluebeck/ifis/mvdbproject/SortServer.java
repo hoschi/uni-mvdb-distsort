@@ -88,6 +88,7 @@ public class SortServer extends UnicastRemoteObject implements ISortServer {
 		if (next >= this.clients.size()) {
 			next = 0;
 		}
+		this.lastClient = next;
 		ISortClient client = this.clients.get(next);
 		try {
 			return client.sort(unsorted);

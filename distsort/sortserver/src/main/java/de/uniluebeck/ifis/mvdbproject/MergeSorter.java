@@ -29,8 +29,8 @@ public class MergeSorter extends ASorter {
 		} else {
 			// divide in two
 			int half = unsorted.size() / 2;
-			List<String> left = unsorted.subList(0, half);
-			List<String> right = unsorted.subList(half, unsorted.size());
+			List<String> left = new ArrayList(unsorted.subList(0, half));
+			List<String> right = new ArrayList(unsorted.subList(half, unsorted.size()));
 
 			// sort/divide it
 			left = this.mergeSort(left);

@@ -9,6 +9,7 @@ public class SortClient extends UnicastRemoteObject implements ISortClient {
 	public List<String> sort(final List<String> list) throws RemoteException {
 		List<String> myList = new ArrayList<String>(list);
 		Collections.sort(myList, String.CASE_INSENSITIVE_ORDER);
+		System.out.println("sorting " + list);
 		return myList;
 	}
 
