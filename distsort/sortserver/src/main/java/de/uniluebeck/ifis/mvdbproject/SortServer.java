@@ -13,14 +13,14 @@ public class SortServer extends UnicastRemoteObject implements ISortServer {
 	/**
 	 * Privates Klassenattribut, wird beim erstmaligen Gebrauch (nicht beim
 	 * Laden) der Klasse erzeugt
-     */
-    private static SortServer instance;
+	 */
+	private static SortServer instance;
 
 	/** 
 	 * Konstruktor ist privat, Klasse darf nicht von außen instanziiert
 	 * werden. 
 	 */
-    private SortServer() throws RemoteException {
+	private SortServer() throws RemoteException {
 		super();
 		this.list = new ArrayList();
 		this.clients = new ArrayList();
@@ -36,9 +36,7 @@ public class SortServer extends UnicastRemoteObject implements ISortServer {
 		}
 		return instance;
 	}
-
 	/****************** Singleton stuff *******************/
-
 	private List<String> list;
 	private List<ISortClient> clients;
 	private ISorter sorter;
@@ -56,7 +54,7 @@ public class SortServer extends UnicastRemoteObject implements ISortServer {
 	public void add(String s) {
 		this.list.add(s);
 	}
-	
+
 	public void clear() {
 		this.list.clear();
 	}
@@ -98,8 +96,47 @@ public class SortServer extends UnicastRemoteObject implements ISortServer {
 		return null;
 	}
 
+	public List<String> sortByClient(List<String> unsorted, int id) {
+		if (id < 0 || id >= this.clients.size()) {
+			throw new ArrayIndexOutOfBoundsException("no client with this number");
+		}
+
+		List<String> sort = new ArrayList<String>();
+		ISortClient client = this.clients.get(id);
+		try {
+			int i = 0;
+			List<String> block = new ArrayList<String>();
+			for (String s : unsorted) {
+				block.add(s);
+				if (i >= this.blockSize) {
+					client.add(block);
+					block.clear();
+				}
+			}
+			client.add(block);
+			client.sort();
+
+			boolean run = true;
+			while (run) {
+				List<String> sortedBlock = client.getSortedBlock(this.getBlockSize());
+				if (sortedBlock != null) {
+					sort.addAll(sortedBlock);
+				} else {
+					run = false;
+				}
+			}
+
+		} catch (RemoteException ex) {
+			Logger.getLogger(SortServer.class.getName()).log(Level.SEVERE, null, ex);
+		}
+		return sort;
+	}
+
+	public int getClientCount() {
+		return this.clients.size();
+	}
+
 	public Iterator<String> iterator() {
 		return this.getList().iterator();
 	}
-
 }

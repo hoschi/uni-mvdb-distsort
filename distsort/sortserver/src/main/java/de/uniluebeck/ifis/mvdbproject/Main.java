@@ -31,10 +31,11 @@ public class Main {
 		}
 		System.out.println("The server is running!");
 
-		mergesort();
+		sort();
 	}
 
-	private static void mergesort() {
+
+	private static void sort() {
 		SortServer server = null;
 		try {
 			server = SortServer.getInstance();
@@ -42,9 +43,10 @@ public class Main {
 			Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
 		}
 
-		server.setBlockSize(4);
-		server.setSorter(new MergeSorter(server));
-		
+		server.setBlockSize(3);
+		//server.setSorter(new MergeSorter(server));
+		server.setSorter(new DistributionSorter(server));
+
 		server.add("a");
 		server.add("d");
 		server.add("c");
