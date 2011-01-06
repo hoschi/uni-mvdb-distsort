@@ -98,4 +98,8 @@ public class SortServer extends UnicastRemoteObject implements ISortServer {
 		return null;
 	}
 
+	public Iterator<String> iterator() {
+		return this.getList().iterator();
+	}
+
 }
