@@ -8,8 +8,8 @@ import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.GregorianCalendar;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -47,25 +47,39 @@ public class Main {
 		//server.setSorter(new MergeSorter(server));
 		server.setSorter(new DistributionSorter(server));
 
-		server.add("a");
-		server.add("d");
-		server.add("c");
-		server.add("b");
-		server.add("a");
-		server.add("d");
-		server.add("c");
-		server.add("b");
-		server.add("a");
-		server.add("d");
-		server.add("c");
-		server.add("b");
-		server.add("a");
-		server.add("d");
-		server.add("c");
-		server.add("b");
+		staticData(server);
+		//randomData(server, 1024);
 
+		long start = GregorianCalendar.getInstance().getTimeInMillis();
+		System.out.println("sorting:" + server.getList());
 		server.sort();
-		System.out.println(server.getList());
+		long end = GregorianCalendar.getInstance().getTimeInMillis();
+		System.out.println("finished in "+ (end - start) + "ms -> " + server.getList());
 
+	}
+
+	private static void staticData(SortServer server) {
+		server.add("a");
+		server.add("d");
+		server.add("c");
+		server.add("b");
+		server.add("a");
+		server.add("d");
+		server.add("c");
+		server.add("b");
+		server.add("a");
+		server.add("d");
+		server.add("c");
+		server.add("b");
+		server.add("a");
+		server.add("d");
+		server.add("c");
+		server.add("b");
+	}
+
+	private static void randomData(SortServer server, int count) {
+		for (int i = 0; i < count; i++) {
+			server.add(UUID.randomUUID().toString());
+		}
 	}
 }
