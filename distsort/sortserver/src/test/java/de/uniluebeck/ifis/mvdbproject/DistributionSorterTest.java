@@ -4,6 +4,7 @@
  */
 package de.uniluebeck.ifis.mvdbproject;
 
+import java.util.Random;
 import java.util.ArrayList;
 import java.util.List;
 import org.easymock.IAnswer;
@@ -61,29 +62,32 @@ public class DistributionSorterTest {
 	public void testSort() {
 		// setup
 		SortServer server = createMock(SortServer.class);
+		Random random = createMock(Random.class);
 
-		expect(server.getBlockSize()).andReturn(2);
-		expectLastCall().anyTimes();
-		
+		expect(random.nextInt(4)).andReturn(2); // means c is the bound
+
+		expect(server.getBlockSize()).andReturn(3).anyTimes();
 		expect(server.getClientCount()).andReturn(2);
-		expect(server.sortByClient(anyObject(List.class), anyInt())).andAnswer(new IAnswer<List<String>>() {
 
-			public List<String> answer() throws Throwable {
-				LocalSorter l = new LocalSorter();
-				l.setList((List<String>) getCurrentArguments()[0]);
-				l.sort();
-				return l.getSortedList();
-			}
-		});
-		expectLastCall().anyTimes();
+		server.sortByClient(anyObject(List.class), anyInt());
+		expectLastCall().times(2);
+		expect(server.getSortedFromClient(0))
+				.andReturn(this.sorted.subList(0,3)); // a, b, c
+		expect(server.getSortedFromClient(1))
+				.andReturn(this.sorted.subList(3, 4)); // d
+
+		
+
 		replay(server);
+		replay(random);
 
 		// test
-		DistributionSorter instance = new DistributionSorter(server);
+		DistributionSorter instance = new DistributionSorter(server, random);
 		instance.setList(this.unsorted);
 		instance.sort();
 		Assert.assertArrayEquals("server list and local list aren't equal",
 				this.sorted.toArray(), instance.getSortedList().toArray());
 		verify(server);
+		verify(random);
 	}
 }

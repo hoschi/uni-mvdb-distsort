@@ -96,38 +96,63 @@ public class SortServer extends UnicastRemoteObject implements ISortServer {
 		return null;
 	}
 
-	public List<String> sortByClient(List<String> unsorted, int id) {
+	public void sortByClient(List<String> unsorted, int id) {
+		if (id < 0 || id >= this.clients.size()) {
+			throw new ArrayIndexOutOfBoundsException("no client with this number");
+		}
+
+		long start = GregorianCalendar.getInstance().getTimeInMillis();
+		ISortClient client = this.clients.get(id);
+		try {
+			int i = 0;
+			List<String> block = null;
+			if (unsorted.size() <= this.blockSize) {
+				client.add(unsorted);
+				long end = GregorianCalendar.getInstance().getTimeInMillis();
+				System.out.println("	adding: " + (end - start) + "ms");
+				start = GregorianCalendar.getInstance().getTimeInMillis();
+
+				client.sort();
+				
+				end = GregorianCalendar.getInstance().getTimeInMillis();
+				System.out.println("	client-sort: " + (end - start) + "ms");
+			} else {
+				block = new ArrayList<String>();
+				for (String s : unsorted) {
+					block.add(s);
+					if (i >= this.blockSize) {
+						client.add(block);
+						block.clear();
+					}
+				}
+				client.add(block);
+				client.sort();
+			}
+		} catch (RemoteException ex) {
+			Logger.getLogger(SortServer.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
+	public List<String> getSortedFromClient(int id) {
 		if (id < 0 || id >= this.clients.size()) {
 			throw new ArrayIndexOutOfBoundsException("no client with this number");
 		}
 
 		List<String> sort = new ArrayList<String>();
+		boolean run = true;
 		ISortClient client = this.clients.get(id);
-		try {
-			int i = 0;
-			List<String> block = new ArrayList<String>();
-			for (String s : unsorted) {
-				block.add(s);
-				if (i >= this.blockSize) {
-					client.add(block);
-					block.clear();
-				}
-			}
-			client.add(block);
-			client.sort();
 
-			boolean run = true;
-			while (run) {
+		while (run) {
+			try {
 				List<String> sortedBlock = client.getSortedBlock(this.getBlockSize());
 				if (sortedBlock != null) {
 					sort.addAll(sortedBlock);
 				} else {
 					run = false;
 				}
+			} catch (RemoteException ex) {
+				Logger.getLogger(SortServer.class.getName()).log(Level.SEVERE, null, ex);
 			}
-
-		} catch (RemoteException ex) {
-			Logger.getLogger(SortServer.class.getName()).log(Level.SEVERE, null, ex);
 		}
 		return sort;
 	}
@@ -138,5 +163,9 @@ public class SortServer extends UnicastRemoteObject implements ISortServer {
 
 	public Iterator<String> iterator() {
 		return this.getList().iterator();
+	}
+
+	void setList(List<String> list) {
+		this.list = list;
 	}
 }

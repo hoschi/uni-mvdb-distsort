@@ -95,7 +95,7 @@ public class SortServerTest {
 	@Ignore
 	// strange easy mock assertion error
 	public void testSortByClientWithGivenId() throws RemoteException {
-		ISortClient mock = createMock(ISortClient.class);
+		/*ISortClient mock = createMock(ISortClient.class);
 		expect(mock.sort(anyObject(List.class)))
 				.andAnswer(new IAnswer<List<String>>() {
 
@@ -112,9 +112,10 @@ public class SortServerTest {
 		server.addClient(mock);
 		server.setBlockSize(2);
 		
-		List<String> sort = server.sortByClient(unsorted, 0);
+		server.sortByClient(unsorted, 0);
+		List<String> sort = server.getSortedFromClient(0);
 		assertArrayEquals("server list and local list aren't equal",
 				this.sorted.toArray(), sort.toArray());
-		verify(mock);
+		verify(mock);*/
 	}
 }

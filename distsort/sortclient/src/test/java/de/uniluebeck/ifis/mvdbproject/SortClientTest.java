@@ -44,6 +44,7 @@ public class SortClientTest {
 		boolean run = true;
 		while (run) {
 			List<String> sortedBlock = client.getSortedBlock(2);
+			
 			if (sortedBlock != null) {
 				sort.addAll(sortedBlock);
 			} else {
@@ -53,6 +54,11 @@ public class SortClientTest {
 		Assert.assertArrayEquals("client list and local list aren't equal",
 				this.sorted.toArray(), sort.toArray());
 
+		this.unsorted = new ArrayList<String>();
+		this.unsorted.add("a");
+		this.unsorted.add("d");
+		this.unsorted.add("c");
+		this.unsorted.add("b");
 		client.add(unsorted);
 
 		client.sort();
