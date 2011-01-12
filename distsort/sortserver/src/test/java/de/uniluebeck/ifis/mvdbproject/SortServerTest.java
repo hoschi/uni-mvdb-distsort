@@ -16,14 +16,6 @@ public class SortServerTest {
 	List<String> sorted;
 	SortServer server;
 
-	class DummySorter extends ASorter {
-		public DummySorter() {
-			super(null);
-		}
-		public void sort() {
-		}
-	}
-
 	@Before
 	public void setUp() throws Exception {
 		this.unsorted = new ArrayList<String>();
@@ -47,48 +39,6 @@ public class SortServerTest {
 	@After
 	public void tearDown() throws Exception {
 		server.clear();
-	}
-
-	@Test
-	public void testAddElementsToSort() {
-		List<String> list = server.getList();
-		assertArrayEquals("server list and local list aren't equal",
-				this.unsorted.toArray(), list.toArray());
-	}
-
-	@Test
-	public void testSettingDifferentSorter() {
-		server.setSorter(new DummySorter());
-		server.sort();
-		assertArrayEquals("server list and local list aren't equal",
-				this.unsorted.toArray(), server.getList().toArray());
-
-		server.setSorter(new LocalSorter());
-		server.sort();
-		assertArrayEquals("server list and local list aren't equal",
-				this.sorted.toArray(), server.getList().toArray());
-	}
-
-	@Test
-	public void testSortByClient() throws RemoteException {
-		ISortClient mock = createMock(ISortClient.class);
-		expect(mock.sort(this.unsorted))
-				.andAnswer(new IAnswer<List<String>>() {
-
-			public List<String> answer() throws Throwable {
-				LocalSorter l = new LocalSorter();
-				l.setList((List<String>) getCurrentArguments()[0]);
-				l.sort();
-				return l.getSortedList();
-			}
-		});
-		replay(mock);
-		
-		server.addClient(mock);
-		List<String> sort = server.sortByClient(unsorted);
-		assertArrayEquals("server list and local list aren't equal",
-				this.sorted.toArray(), sort.toArray());
-		verify(mock);
 	}
 
 	@Test

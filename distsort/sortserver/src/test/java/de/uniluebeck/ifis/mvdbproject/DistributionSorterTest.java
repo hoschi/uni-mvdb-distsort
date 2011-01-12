@@ -67,16 +67,17 @@ public class DistributionSorterTest {
 		expect(random.nextInt(4)).andReturn(2); // means c is the bound
 
 		expect(server.getBlockSize()).andReturn(3).anyTimes();
-		expect(server.getClientCount()).andReturn(2);
+		expect(server.getClientCount()).andReturn(2).anyTimes();
 
-		server.sortByClient(anyObject(List.class), anyInt());
-		expectLastCall().times(2);
-		expect(server.getSortedFromClient(0))
-				.andReturn(this.sorted.subList(0,3)); // a, b, c
-		expect(server.getSortedFromClient(1))
-				.andReturn(this.sorted.subList(3, 4)); // d
+		List<String> client1 = new ArrayList<String>();
+		client1.add("a");
+		client1.add("c");
+		client1.add("b");
+		List<String> client2 = new ArrayList<String>();
+		client2.add("d");
 
-		
+		server.sortByClient(client1, 0);
+		server.sortByClient(client2, 1);
 
 		replay(server);
 		replay(random);
@@ -85,8 +86,69 @@ public class DistributionSorterTest {
 		DistributionSorter instance = new DistributionSorter(server, random);
 		instance.setList(this.unsorted);
 		instance.sort();
-		Assert.assertArrayEquals("server list and local list aren't equal",
-				this.sorted.toArray(), instance.getSortedList().toArray());
+		verify(server);
+		verify(random);
+	}
+
+	@Test
+	public void testHasNext() {
+		// setup
+		SortServer server = createMock(SortServer.class);
+
+		expect(server.getBlockSize()).andReturn(2).anyTimes();
+		expect(server.getClientCount()).andReturn(2).anyTimes();
+
+		server.sortByClient(anyObject(List.class), anyInt());
+		expectLastCall().times(2);
+		expect(server.getSortedFromClient(0)).andReturn(this.sorted.subList(0, 3)); // a, b, c
+		expect(server.getSortedFromClient(1)).andReturn(this.sorted.subList(3, 4)); // d
+
+		replay(server);
+
+
+		// test
+		DistributionSorter instance = new DistributionSorter(server, new Random());
+		instance.setList(this.unsorted);
+		instance.sort();
+
+		int i = 0;
+		while (instance.hasNext()) {
+			instance.next();
+			i++;
+		}
+		Assert.assertEquals(4, i);
+		verify(server);
+
+	}
+
+	@Test
+	public void testNext() {
+		// setup
+		Random random = createMock(Random.class);
+		expect(random.nextInt(4)).andReturn(2); // means c is the bound
+
+		SortServer server = createMock(SortServer.class);
+
+		expect(server.getBlockSize()).andReturn(2).anyTimes();
+		expect(server.getClientCount()).andReturn(2).anyTimes();
+
+		server.sortByClient(anyObject(List.class), anyInt());
+		expectLastCall().times(2);
+		expect(server.getSortedFromClient(0)).andReturn(this.sorted.subList(0, 3)); // a, b, c
+		expect(server.getSortedFromClient(1)).andReturn(this.sorted.subList(3, 4)); // d
+
+		replay(random);
+		replay(server);
+
+		// test
+		DistributionSorter instance = new DistributionSorter(server, random);
+		instance.setList(this.unsorted);
+		instance.sort();
+
+		Assert.assertEquals("a", instance.next());
+		Assert.assertEquals("b", instance.next());
+		Assert.assertEquals("c", instance.next());
+		Assert.assertEquals("d", instance.next());
 		verify(server);
 		verify(random);
 	}

@@ -39,10 +39,10 @@ public class SortClient extends UnicastRemoteObject implements ISortClient {
 			}
 		}
 		long start = GregorianCalendar.getInstance().getTimeInMillis();
-		System.out.println("adding ... " + GregorianCalendar.getInstance().getTime());
+		System.out.println("\nadding ... " + GregorianCalendar.getInstance().getTime());
 		this.list.addAll(unsorted);
 		long end = GregorianCalendar.getInstance().getTimeInMillis();
-		System.out.println("finished in " + (end - start) + "ms -> ");
+		System.out.println("\tfinished in " + (end - start) + "ms");
 		state = State.sort;
 	}
 
@@ -57,7 +57,7 @@ public class SortClient extends UnicastRemoteObject implements ISortClient {
 			}
 		}
 		long start = GregorianCalendar.getInstance().getTimeInMillis();
-		System.out.println("delegating ... " + GregorianCalendar.getInstance().getTime());
+		System.out.println("\ndelegating ... " + GregorianCalendar.getInstance().getTime());
 
 		Sorter s = new Sorter();
 		s.setClient(this);
@@ -65,7 +65,7 @@ public class SortClient extends UnicastRemoteObject implements ISortClient {
 		t.start();
 
 		long end = GregorianCalendar.getInstance().getTimeInMillis();
-		System.out.println("finished in " + (end - start) + "ms -> ");
+		System.out.println("\tfinished in " + (end - start) + "ms");
 	}
 
 	private class Sorter implements Runnable {
@@ -79,31 +79,11 @@ public class SortClient extends UnicastRemoteObject implements ISortClient {
 		@Override
 		public void run() {
 			long start = GregorianCalendar.getInstance().getTimeInMillis();
-			System.out.println("sorting ... " + GregorianCalendar.getInstance().getTime());
+			System.out.println("\nsorting ... " + GregorianCalendar.getInstance().getTime());
 			Collections.sort(client.list, String.CASE_INSENSITIVE_ORDER);
 			long end = GregorianCalendar.getInstance().getTimeInMillis();
-			System.out.println("finished in " + (end - start) + "ms -> ");
+			System.out.println("\tfinished in " + (end - start) + "ms");
 			client.state = State.getback;
-
-		}
-	}
-
-	private class Adder implements Runnable {
-
-		SortClient client;
-
-		public void setClient(SortClient client) {
-			this.client = client;
-		}
-
-		@Override
-		public void run() {
-			long start = GregorianCalendar.getInstance().getTimeInMillis();
-			System.out.println("adding ... " + GregorianCalendar.getInstance().getTime());
-			//client.list.addAll(unsorted);
-			long end = GregorianCalendar.getInstance().getTimeInMillis();
-			System.out.println("finished in " + (end - start) + "ms -> ");
-			client.state = State.sort;
 
 		}
 	}
@@ -118,7 +98,6 @@ public class SortClient extends UnicastRemoteObject implements ISortClient {
 				Logger.getLogger(SortClient.class.getName()).log(Level.SEVERE, null, ex);
 			}
 		}
-		System.out.println(".");
 		List<String> block = null;
 		if (blockSize <= this.list.size()) {
 			block = new ArrayList<String>(this.list.subList(0, blockSize));
@@ -132,6 +111,7 @@ public class SortClient extends UnicastRemoteObject implements ISortClient {
 			this.list.clear();
 			state = State.ready;
 		}
+		System.out.print("*");
 		return block;
 	}
 }

@@ -63,6 +63,7 @@ public class Main {
 		long start = GregorianCalendar.getInstance().getTimeInMillis();
 		System.out.println("sorting ...");
 		server.sort();
+		server.getSortedList();
 		long end = GregorianCalendar.getInstance().getTimeInMillis();
 		long solution = end - start;
 		//System.out.println("finished in " + (end - start) + "ms -> ");
@@ -113,14 +114,14 @@ public class Main {
 		input.add(900);
 		input.add(1000);
 		input.add(5000);
-		input.add(7000);
+		input.add(7000);*/
 		input.add(10000);
-		input.add(30000);*/
-		input.add(10000000);
+		input.add(30000);
+		input.add(100000);
 		//input.add(1000000);
 
 
-		server.setBlockSize(1000000);
+		server.setBlockSize(1000);
 		for (Integer in : input) {
 			System.out.println("generating data");
 			List<String> randomData = randomData(in);
@@ -137,17 +138,17 @@ public class Main {
 			System.out.println("merge");
 
 			time = 0;
-			/*server.setSorter(new MergeSorter(server));
+			server.setSorter(new MergeSorter(server));
 			server.setList(randomData);
-			time = messuredSorting(server);*/
+			time = messuredSorting(server);
 			timesMerge.add(time);
 
 
 			System.out.println("dist");
-			server.setSorter(new DistributionSorter(server, new Random()));
 			time = 0;
+/*			server.setSorter(new DistributionSorter(server, new Random()));
 			server.setList(randomData);
-			time = messuredSorting(server);
+			time = messuredSorting(server);*/
 			timesDist.add(time);
 		}
 

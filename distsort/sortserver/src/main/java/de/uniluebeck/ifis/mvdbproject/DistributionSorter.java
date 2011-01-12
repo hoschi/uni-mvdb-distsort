@@ -16,17 +16,25 @@ import java.util.Random;
  */
 public class DistributionSorter extends ASorter {
 
-	Random rand;
-	List<List<String>> buckets;
-	List<List<String>> sorted;
+	private Random rand;
+	private List<List<String>> buckets;
+	private List<List<String>> sorted;
+	private int counter;
+	private Integer nextClient;
 
 	public DistributionSorter(SortServer server, Random rand) {
 		super(server);
 		this.rand = rand;
+		counter = 0;
+		nextClient = null;
 	}
 
 	@Override
 	public void sort() {
+		if (server.getClientCount() < 2) {
+			throw new RuntimeException("not enought clients to sort");
+		}
+
 		long start = GregorianCalendar.getInstance().getTimeInMillis();
 		List<String> bounds = new ArrayList<String>();
 		int k = server.getClientCount() - 1;
@@ -67,22 +75,43 @@ public class DistributionSorter extends ASorter {
 		}
 		long end = GregorianCalendar.getInstance().getTimeInMillis();
 		System.out.println("overhead: " + (end - start) + "ms");
-		start = GregorianCalendar.getInstance().getTimeInMillis();
 
-		this.list.clear();
+
 		// sort
 		for (int i = 0; i < this.buckets.size(); ++i) {
 			server.sortByClient(this.buckets.get(i), i);
 		}
-		end = GregorianCalendar.getInstance().getTimeInMillis();
-		System.out.println("sorting: " + (end - start) + "ms");
-		start = GregorianCalendar.getInstance().getTimeInMillis();
-		// join
-		for (int i = 0; i < this.buckets.size(); ++i) {
-			list.addAll(server.getSortedFromClient(i));
-			//this.buckets.set(i, server.getSortedFromClient(i));
+
+		this.counter = this.list.size();
+		this.list = null;
+		buckets = null;
+	}
+
+	@Override
+	public boolean hasNext() {
+		return this.counter > 0;
+	}
+
+	@Override
+	public String next() {
+		// no more data to get
+		if (nextClient == null) {
+			return null;
+		} else if (nextClient > server.getClientCount()) {
+			nextClient = null;
+			return null;
 		}
-		end = GregorianCalendar.getInstance().getTimeInMillis();
-		System.out.println("joining: " + (end - start) + "ms");
+
+		// get new list or exit
+		if (this.list == null || this.list.size() <= 0) {
+			this.list = server.getSortedFromClient(nextClient);
+			++nextClient;
+		}
+
+		// return item
+		String ret = this.list.get(0);
+		this.list.remove(0);
+		--counter;
+		return ret;
 	}
 }

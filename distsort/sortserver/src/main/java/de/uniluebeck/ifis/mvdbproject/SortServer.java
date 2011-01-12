@@ -59,7 +59,11 @@ public class SortServer extends UnicastRemoteObject implements ISortServer {
 		this.list.clear();
 	}
 
-	public List<String> getList() {
+	public List<String> getSortedList() {
+		this.list = new ArrayList<String>();
+		while (this.sorter.hasNext()) {
+			this.list.add(this.sorter.next());
+		}
 		return this.list;
 	}
 
@@ -79,21 +83,6 @@ public class SortServer extends UnicastRemoteObject implements ISortServer {
 	public void addClient(ISortClient client) throws RemoteException {
 		this.clients.add(client);
 		System.out.println("new client added");
-	}
-
-	public List<String> sortByClient(List<String> unsorted) {
-		int next = ++this.lastClient;
-		if (next >= this.clients.size()) {
-			next = 0;
-		}
-		this.lastClient = next;
-		ISortClient client = this.clients.get(next);
-		try {
-			return client.sort(unsorted);
-		} catch (RemoteException ex) {
-			Logger.getLogger(SortServer.class.getName()).log(Level.SEVERE, null, ex);
-		}
-		return null;
 	}
 
 	public void sortByClient(List<String> unsorted, int id) {
@@ -162,7 +151,7 @@ public class SortServer extends UnicastRemoteObject implements ISortServer {
 	}
 
 	public Iterator<String> iterator() {
-		return this.getList().iterator();
+		return this.sorter;
 	}
 
 	void setList(List<String> list) {

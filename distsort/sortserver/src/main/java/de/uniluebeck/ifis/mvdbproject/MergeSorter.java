@@ -14,53 +14,68 @@ import java.util.List;
  */
 public class MergeSorter extends ASorter {
 
+	private int counter;
+	private List<List<String>> buckets;
+
 	public MergeSorter(SortServer server) {
 		super(server);
+		counter = 0;
+		buckets = null;
 	}
 
 	@Override
 	public void sort() {
-		this.list = mergeSort(this.list);
+
+		int chunk = (int) Math.ceil(this.list.size() / server.getClientCount());
+		// move stuff to clients
+		for (int i = 0; i < server.getClientCount(); ++i) {
+			server.sortByClient(this.list.subList(i * chunk, i * chunk + chunk), i);
+		}
+		this.counter = this.list.size();
+		this.list.clear();
+		buckets = null;
 	}
 
-	private List<String> mergeSort(List<String> unsorted) {
-		if (unsorted.size() <= server.getBlockSize()) {
-			return server.sortByClient(unsorted);
-		} else {
-			// divide in two
-			int half = unsorted.size() / 2;
-			List<String> left = new ArrayList(unsorted.subList(0, half));
-			List<String> right = new ArrayList(unsorted.subList(half, unsorted.size()));
+	@Override
+	public boolean hasNext() {
+		return this.counter > 0;
+	}
 
-			// sort/divide it
-			left = this.mergeSort(left);
-			right = this.mergeSort(right);
+	@Override
+	public String next() {
 
-			// merge it
-			List<String> sorted = new ArrayList<String>();
-			int counterLeft = left.size();
-			int counterRight = right.size();
-
-			while (counterLeft != 0 || counterRight != 0) {
-				if (counterLeft == 0) {// last element is on right side
-					sorted.add(right.get(0));
-					right = right.subList(1, right.size());
-					counterRight--;
-				} else if (counterRight == 0) { // last element is on left side
-					sorted.add(left.get(0));
-					left = left.subList(1, left.size());
-					counterLeft--;
-				} else if (left.get(0).compareToIgnoreCase(right.get(0)) <= 0) {
-					sorted.add(left.get(0));
-					left = left.subList(1, left.size());
-					counterLeft--;
-				} else {
-					sorted.add(right.get(0));
-					right = right.subList(1, right.size());
-					counterRight--;
+		if (buckets == null) {// initialize
+			buckets = new ArrayList<List<String>>();
+			for (int i = 0; i < server.getClientCount(); ++i) {
+				List<String> sortedFromClient = server.getSortedFromClient(i);
+				if (sortedFromClient != null) {
+					buckets.add(new ArrayList<String>(sortedFromClient));
 				}
 			}
-			return sorted;
 		}
+
+		String ret = null;
+		List<String> correspondingBucket = null;
+		for (List<String> bucket : buckets) {
+			if (bucket == null || bucket.size() <= 0) {
+				continue;
+			}
+
+			if (ret == null) {
+				ret = bucket.get(0);
+				correspondingBucket = bucket;
+			} else if (bucket.get(0).compareToIgnoreCase(ret) < 0) {
+				ret = bucket.get(0);
+				correspondingBucket = bucket;
+			}
+		}
+
+		if (correspondingBucket != null && !correspondingBucket.isEmpty()) {
+			correspondingBucket.remove(0);
+		}
+
+		--counter;
+		return ret;
 	}
+
 }

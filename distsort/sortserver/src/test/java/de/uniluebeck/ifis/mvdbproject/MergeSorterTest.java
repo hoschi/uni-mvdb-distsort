@@ -60,30 +60,80 @@ public class MergeSorterTest {
 	@Test
 	public void testSort() {
 		// setup
-		LocalSorter l = new LocalSorter();
 		SortServer server = createMock(SortServer.class);
+
 		expect(server.getBlockSize()).andReturn(2);
 		expectLastCall().anyTimes();
-		expect(server.sortByClient(anyObject(List.class)))
-				.andAnswer(new IAnswer<List<String>>() {
-
-			public List<String> answer() throws Throwable {
-				LocalSorter l = new LocalSorter();
-				l.setList((List<String>) getCurrentArguments()[0]);
-				l.sort();
-				return l.getSortedList();
-			}
-		});
+		expect(server.getClientCount()).andReturn(2);
 		expectLastCall().anyTimes();
+
+
+		server.sortByClient(this.unsorted.subList(0, 2), 0);
+		server.sortByClient(this.unsorted.subList(2, 4), 1);
 		replay(server);
 
 		// test
 		MergeSorter instance = new MergeSorter(server);
 		instance.setList(this.unsorted);
 		instance.sort();
-		Assert.assertArrayEquals("server list and local list aren't equal",
-				this.sorted.toArray(), instance.getSortedList().toArray());
+		verify(server);
 
+	}
 
+	@Test
+	public void testHasNext() {
+		// setup
+		SortServer server = createMock(SortServer.class);
+
+		expect(server.getBlockSize()).andReturn(2);
+		expectLastCall().anyTimes();
+		expect(server.getClientCount()).andReturn(2);
+		expectLastCall().anyTimes();
+		server.sortByClient(anyObject(List.class), anyInt());
+		expectLastCall().anyTimes();
+		expect(server.getSortedFromClient(anyInt())).andReturn(null).anyTimes();
+		replay(server);
+
+		// test
+		MergeSorter instance = new MergeSorter(server);
+		instance.setList(this.unsorted);
+		instance.sort();
+
+		int i = 0;
+		while (instance.hasNext()) {
+			instance.next();
+			i++;
+		}
+		Assert.assertEquals(4, i);
+		verify(server);
+	}
+
+	@Test
+	public void testNext() {
+		// setup
+		SortServer server = createMock(SortServer.class);
+
+		expect(server.getBlockSize()).andReturn(2);
+		expectLastCall().anyTimes();
+		expect(server.getClientCount()).andReturn(2);
+		expectLastCall().anyTimes();
+		server.sortByClient(this.unsorted.subList(0, 2), 0);
+		server.sortByClient(this.unsorted.subList(2, 4), 1);
+		expect(server.getSortedFromClient(0))
+				.andReturn(this.sorted.subList(0,2));
+		expect(server.getSortedFromClient(1))
+				.andReturn(this.sorted.subList(2,4));
+		replay(server);
+
+		// test
+		MergeSorter instance = new MergeSorter(server);
+		instance.setList(this.unsorted);
+		instance.sort();
+
+		Assert.assertEquals("a", instance.next());
+		Assert.assertEquals("b", instance.next());
+		Assert.assertEquals("c", instance.next());
+		Assert.assertEquals("d", instance.next());
+		verify(server);
 	}
 }
