@@ -1,13 +1,12 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html dir="ltr">
   <head>
+	  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 	  <link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/dojo/1.5/dijit/themes/claro/claro.css"
 	  />
 	  <style type="text/css">
 		body, html 
 		{
-		  font-family:helvetica,arial,sans-serif;
-		  font-size:90%;
 		  height:100%;
 		  width:100%;
 		}
@@ -19,6 +18,8 @@
 		/* required modules for the basic chart */
 		//Main 2d chart class
 		dojo.require("dojox.charting.Chart2D");
+		dojo.require("dojox.charting.action2d.Magnify");
+		dojo.require("dojox.charting.action2d.Tooltip");
 		//Class to create a legend for our chart
 		dojo.require("dojox.charting.widget.Legend");
 		//A theme for our chart
@@ -32,15 +33,13 @@
 					//show markers at number points?
 					markers: true,
 					//curve the lines on the plot?
-					//tension: "S",
+					tension: "S",
 					//show lines?
 					lines: true,
 					//fill in areas?
 					areas: false,
 					//offset position for label
 					labelOffset: -30,
-					//add shadows to lines
-					shadows: { dx:2, dy:2, dw:2 }
 			});
 			node.addAxis("x", {
 			  natural: true,
@@ -57,6 +56,8 @@
 			  ]
 			});
 			node.addAxis("y", { vertical:true });
+			var magnify = new dojox.charting.action2d.Magnify(node, "default");
+			var tip = new dojox.charting.action2d.Tooltip(node, "default");
 			return node;
 		};
 		renderPlot = function(node,data) {
@@ -101,26 +102,57 @@
 
   
   <body class="claro">
-    <h1>Sorting</h1>
+    <h1>Sortierung</h1>
 	<p>
-	Getestet wurd das Programm auf einem Quad Core mit 2600MHz pro Core und 8GB Arbeitsspeicher.
-	Betriebssystem ist Debian Lenny amd64 mit modifiziertem xen kernel.
-
+		Getestet wurde das Programm auf einem Quad Core mit 2600MHz pro Core
+		und 8GB Arbeitsspeicher. Betriebssystem ist Debian Lenny amd64 mit
+		modifiziertem XEN Kernel. Zeitliche Messungen sind in der JVM
+		schwierig, durch die verwendete HotSpot Technologie. Das sieht man auch
+		hier deutlich am "Knick" im ersten Diagramm. Eigentlich sollte die
+		Kurve mehr oder weniger linear ansteigen.
+	</p>
+	<p>
+		Das lokale Sortieren ist wesentlich schneller, unabhängig von der
+		Datengröße die zu sortieren ist. Das liegt massiv daran, das durch RMI
+		ein Overhead entsteht:
+		<ul>
+			<li>es müssen Listen umkopiert werden da keine Referenzen
+			übertragen werden</li>
+			<li>de-/seriealisieren der Daten</li>
+			<li>TCP/IP zur Kommunikation</li>
+		</ul>
+		Das sortieren wird auch langsamer, umso kleiner die Blockgröße gewählt
+		wird. Durch mehr Blöcke ensteht mehr Kommunikationsaufwand.
+	</p>
+	<p>
+		Das der verteilte Distribution Sort Algorithmus ist, mit zunehmender
+		Daten Größe, langsamer als der verteilte Merge Sort Algorithmus. Das
+		liegt meiner Meinung daran das beim Distribution Sort ein zusäztlicher
+		Lesezyklus vorhanden ist um die Grenzelemente auszulosen, sowie die
+		Verwendung von Zufallszahlen. Ersteres macht sich natürlich bei großen
+		Datenmengen stärker bemerkbar.
+	</p>
+	<p>
 	todo
 	- einheiten für axen
 	- tabelle mit daten adden unter jedes diagramm
-	- auswertungs text noch schreiben
 	</p>
 
 	<h2>lokale Sortierung</h2>
+		Wenn man mit der Maus über den Datenpunkt fährt, sieht man direkt den Wert.
 	<div id="chart1"></div>
-	<h2>Blocksize = unendlich</h2>
+	<h2>Blockgröße = unendlich</h2>
+		Legende:
+		<ul>
+			<li>grün = merge sort</li>
+			<li>blau = distribution sort</li>
+		</ul>
 	<div id="chart2"></div>
-	<h2>Blocksize = 10000</h2>
+	<h2>Blockgröße = 10000</h2>
 	<div id="chart3"></div>
-	<h2>Blocksize = 1000</h2>
+	<h2>Blockgröße = 1000</h2>
 	<div id="chart4"></div>
-	<h2>Blocksize = 100</h2>
+	<h2>Blockgröße = 100</h2>
 	<div id="chart5"></div>
   </body>
 </html>
