@@ -85,6 +85,7 @@ public class DistributionSorter extends ASorter {
 		this.counter = this.list.size();
 		this.list = null;
 		buckets = null;
+		nextClient = 0;
 	}
 
 	@Override
@@ -96,15 +97,18 @@ public class DistributionSorter extends ASorter {
 	public String next() {
 		// no more data to get
 		if (nextClient == null) {
+			this.counter = 0;
 			return null;
 		} else if (nextClient > server.getClientCount()) {
 			nextClient = null;
+			this.counter = 0;
 			return null;
 		}
 
 		// get new list or exit
 		if (this.list == null || this.list.size() <= 0) {
-			this.list = server.getSortedFromClient(nextClient);
+			this.list = new ArrayList<String>();
+			this.list.addAll(server.getSortedFromClient(nextClient));
 			++nextClient;
 		}
 

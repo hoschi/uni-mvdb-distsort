@@ -29,7 +29,9 @@ public class MergeSorter extends ASorter {
 		int chunk = (int) Math.ceil(this.list.size() / server.getClientCount());
 		// move stuff to clients
 		for (int i = 0; i < server.getClientCount(); ++i) {
-			server.sortByClient(this.list.subList(i * chunk, i * chunk + chunk), i);
+			List<String> temp = new ArrayList<String>();
+			temp.addAll(this.list.subList(i * chunk, i * chunk + chunk));
+			server.sortByClient(temp, i);
 		}
 		this.counter = this.list.size();
 		this.list.clear();

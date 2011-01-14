@@ -10,7 +10,9 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.GregorianCalendar;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
@@ -37,6 +39,7 @@ public class Main {
 			System.out.println(java.net.InetAddress.getLocalHost());
 		} catch (UnknownHostException ex) {
 			Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+
 		}
 		System.out.println("The server is running!");
 
@@ -53,7 +56,6 @@ public class Main {
 				--i;
 			}
 		}
-		//sort();
 		sortPlotting();
 
 
@@ -63,29 +65,14 @@ public class Main {
 		long start = GregorianCalendar.getInstance().getTimeInMillis();
 		System.out.println("sorting ...");
 		server.sort();
-		server.getSortedList();
+		Iterator<String> iterator = server.iterator();
+		while (iterator.hasNext()) {
+			iterator.next();
+		}
 		long end = GregorianCalendar.getInstance().getTimeInMillis();
 		long solution = end - start;
 		//System.out.println("finished in " + (end - start) + "ms -> ");
 		return solution;
-	}
-
-	private static void sort() {
-		SortServer server = null;
-		try {
-			server = SortServer.getInstance();
-		} catch (RemoteException ex) {
-			Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-		}
-
-		server.setBlockSize(10);
-		//server.setSorter(new MergeSorter(server));
-		server.setSorter(new DistributionSorter(server, new Random()));
-
-		//staticData(server);
-		randomData(server, 10);
-		messuredSorting(server);
-
 	}
 
 	private static void sortPlotting() {
@@ -100,37 +87,29 @@ public class Main {
 		List<Long> timesLocal = new ArrayList<Long>();
 		List<Long> timesMerge = new ArrayList<Long>();
 		List<Long> timesDist = new ArrayList<Long>();
-		/*input.add(10);
-		input.add(30);
-		input.add(70);
-		input.add(100);
-		input.add(200);
-		input.add(300);
-		input.add(400);
-		input.add(500);
-		input.add(600);
-		input.add(700);
-		input.add(800);
-		input.add(900);
+
 		input.add(1000);
 		input.add(5000);
-		input.add(7000);*/
+		input.add(7000);
 		input.add(10000);
 		input.add(30000);
+		input.add(50000);
+		input.add(70000);
 		input.add(100000);
-		//input.add(1000000);
 
-
-		server.setBlockSize(1000);
+		server.setBlockSize(100);
 		for (Integer in : input) {
 			System.out.println("generating data");
 			List<String> randomData = randomData(in);
+			List<String> copy = new ArrayList<String>();
 
 			System.out.println("local");
 
 			server.setSorter(new LocalSorter());
 			long time = 0;
-			server.setList(randomData);
+			copy = new ArrayList<String>();
+			copy.addAll(randomData);
+			server.setList(copy);
 			time = messuredSorting(server);
 			timesLocal.add(time);
 
@@ -139,16 +118,20 @@ public class Main {
 
 			time = 0;
 			server.setSorter(new MergeSorter(server));
-			server.setList(randomData);
+			copy = new ArrayList<String>();
+			copy.addAll(randomData);
+			server.setList(copy);
 			time = messuredSorting(server);
 			timesMerge.add(time);
 
 
 			System.out.println("dist");
 			time = 0;
-/*			server.setSorter(new DistributionSorter(server, new Random()));
-			server.setList(randomData);
-			time = messuredSorting(server);*/
+			server.setSorter(new DistributionSorter(server, new Random()));
+			copy = new ArrayList<String>();
+			copy.addAll(randomData);
+			server.setList(copy);
+			time = messuredSorting(server);
 			timesDist.add(time);
 		}
 
