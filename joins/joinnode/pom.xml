@@ -1,0 +1,59 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>de.uniluebeck.ifis.mvdbproject</groupId>
+		<artifactId>joins</artifactId>
+		<version>1.0-SNAPSHOT</version>
+		<relativePath>..</relativePath>
+	</parent>
+	
+	<groupId>de.uniluebeck.ifis.mvdbproject.joins</groupId>
+	<artifactId>joinnode</artifactId>
+	<version>1.0-SNAPSHOT</version>
+	<packaging>jar</packaging>
+
+	<name>joinnode</name>
+
+	<dependencies>
+		<dependency>
+			<groupId>de.uniluebeck.ifis.mvdbproject.joins</groupId>
+			<artifactId>shared</artifactId>
+			<version>1.0-SNAPSHOT</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifest>
+							<mainClass>de.uniluebeck.ifis.mvdbproject.joins.node.Main</mainClass>
+							<packageName>de.uniluebeck.ifis.mvdbproject.joins.node</packageName>
+						</manifest>
+					</archive>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.dstovall</groupId>
+				<artifactId>onejar-maven-plugin</artifactId>
+				<version>1.4.4</version>
+				<executions>
+					<execution>
+						<configuration>
+                            <!-- Optional, default is false -->
+							<attachToBuild>true</attachToBuild>
+						</configuration>
+						<goals>
+							<goal>one-jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>
