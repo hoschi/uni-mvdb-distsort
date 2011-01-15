@@ -42,20 +42,27 @@
 					labelOffset: -30,
 			});
 			node.addAxis("x", {
-			  natural: true,
-			  // our logarithmic labels
-			  labels: [
-				{value: 1, text: "1 * 10^3"},
-				{value: 2, text: "5 * 10^3"},
-				{value: 3, text: "7 * 10^3"},
-				{value: 4, text: "1 * 10^3"},
-				{value: 5, text: "3 * 10^4"},
-				{value: 6, text: "5 * 10^4"},
-				{value: 7, text: "7 * 10^4"},
-				{value: 8, text: "1 * 10^5"},
-			  ]
+				natural: true,
+				includeZero:true,
+				labels: [
+					{value: 0, text: "Strings"},
+					{value: 1, text: "1 * 10^3"},
+					{value: 2, text: "5 * 10^3"},
+					{value: 3, text: "7 * 10^3"},
+					{value: 4, text: "1 * 10^3"},
+					{value: 5, text: "3 * 10^4"},
+					{value: 6, text: "5 * 10^4"},
+					{value: 7, text: "7 * 10^4"},
+					{value: 8, text: "1 * 10^5"},
+				]
 			});
-			node.addAxis("y", { vertical:true });
+			node.addAxis("y", { 
+				vertical:true,
+				includeZero:true,
+				labels: [
+					{value: 0, text: "ms"}
+				]
+			});
 			var magnify = new dojox.charting.action2d.Magnify(node, "default");
 			var tip = new dojox.charting.action2d.Tooltip(node, "default");
 			return node;
@@ -66,6 +73,9 @@
 			node.addSeries("distribution sort",data["dist"], { stroke: "blue"});
 			node.render();
 		};
+		createGrid = function(node,data) {
+
+		}
 
 		dojo.ready(function() {
 			var local = {
