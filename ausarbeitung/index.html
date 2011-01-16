@@ -2,8 +2,9 @@
 <html dir="ltr">
   <head>
 	  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-	  <link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/dojo/1.5/dijit/themes/claro/claro.css"
-	  />
+	  <link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/dojo/1.5/dijit/themes/claro/claro.css" />
+	  <link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/dojo/1.5/dojox/grid/resources/Grid.css" />
+	  <link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/dojo/1.5/dojox/grid/resources/claroGrid.css" />
 	  <style type="text/css">
 		body, html 
 		{
@@ -15,6 +16,8 @@
 			  djConfig="parseOnLoad: true, dojoCallbackUrl:'./blank.html'">
 	  </script>
 	  <script type="text/javascript">
+		dojo.require("dojox.grid.DataGrid");
+		dojo.require("dojo.data.ItemFileReadStore");
 		/* required modules for the basic chart */
 		//Main 2d chart class
 		dojo.require("dojox.charting.Chart2D");
@@ -49,7 +52,7 @@
 					{value: 1, text: "1 * 10^3"},
 					{value: 2, text: "5 * 10^3"},
 					{value: 3, text: "7 * 10^3"},
-					{value: 4, text: "1 * 10^3"},
+					{value: 4, text: "1 * 10^4"},
 					{value: 5, text: "3 * 10^4"},
 					{value: 6, text: "5 * 10^4"},
 					{value: 7, text: "7 * 10^4"},
@@ -72,8 +75,31 @@
 			node.addSeries("merge sort",data["merge"], { stroke: "green"});
 			node.addSeries("distribution sort",data["dist"], { stroke: "blue"});
 			node.render();
+			return node;
 		};
 		createGrid = function(node,data) {
+			var table = dojo.create("table",{border:1}, node);
+			var row = dojo.create("tr",null,table);
+			dojo.create("th",{innerHTML:""},row);
+			dojo.create("th",{innerHTML:"1 * 10^3"},row);
+			dojo.create("th",{innerHTML:"5 * 10^3"},row);
+			dojo.create("th",{innerHTML:"7 * 10^4"},row);
+			dojo.create("th",{innerHTML:"1 * 10^4"},row);
+			dojo.create("th",{innerHTML:"3 * 10^4"},row);
+			dojo.create("th",{innerHTML:"5 * 10^4"},row);
+			dojo.create("th",{innerHTML:"7 * 10^4"},row);
+			dojo.create("th",{innerHTML:"1 * 10^5"},row);
+			dojo.create("th",{innerHTML:"Strings"},row);
+
+			for(var method in data){
+				var row = dojo.create("tr",null,table);
+				dojo.create("td",{innerHTML:method},row);
+				dojo.forEach(data[method], function(point) {
+					dojo.create("td",{innerHTML:point},row);
+				});
+				dojo.create("td",{innerHTML:"ms"},row);
+			}
+			
 
 		}
 
@@ -84,27 +110,36 @@
 			var node = createPlot("chart1");
 			node.addSeries("local sort",local["local"], { stroke: "red"});
 			node.render();
+			createGrid(node.node,local);
 
 			var run1 = {
 				merge: [122, 330, 159, 93, 292, 692, 1337, 2644],
 				dist: [120, 189, 161, 79, 267, 776, 1876, 4195]
 				};
-			renderPlot("chart2", run1);
+			var node = renderPlot("chart2", run1);
+			createGrid(node.node,run1);
+
 			var run2 = {
 				merge: [93, 328, 335, 122, 498, 1261, 2321, 4748],
 				dist: [169, 363, 131, 61, 797, 1367, 4240, 6579]
 				};
-			renderPlot("chart3", run2);
+			var node = renderPlot("chart3", run2);
+			createGrid(node.node,run2);
+
 			var run3 = {
 				merge: [102, 463, 157, 128, 482, 1253, 2384, 4655],
 				dist: [121, 271, 156, 98, 499, 2037, 3388, 4715]
 				};
-			renderPlot("chart4", run3);
+			var node = renderPlot("chart4", run3);
+			createGrid(node.node,run3);
+
 			var run4 = {
 				merge: [132, 403, 199, 168, 559, 1377, 2554, 5009],
 				dist: [172, 225, 131, 151, 694, 1433, 2665, 8981]
 				};
-			renderPlot("chart5", run4);
+			var node = renderPlot("chart5", run4);
+			createGrid(node.node,run4);
+
 		});
 
 	  </script>
@@ -142,15 +177,11 @@
 		Verwendung von Zufallszahlen. Ersteres macht sich natürlich bei großen
 		Datenmengen stärker bemerkbar.
 	</p>
-	<p>
-	todo
-	- einheiten für axen
-	- tabelle mit daten adden unter jedes diagramm
-	</p>
 
 	<h2>lokale Sortierung</h2>
 		Wenn man mit der Maus über den Datenpunkt fährt, sieht man direkt den Wert.
 	<div id="chart1"></div>
+
 	<h2>Blockgröße = unendlich</h2>
 		Legende:
 		<ul>
@@ -158,11 +189,15 @@
 			<li>blau = distribution sort</li>
 		</ul>
 	<div id="chart2"></div>
+
 	<h2>Blockgröße = 10000</h2>
 	<div id="chart3"></div>
+
 	<h2>Blockgröße = 1000</h2>
 	<div id="chart4"></div>
+
 	<h2>Blockgröße = 100</h2>
 	<div id="chart5"></div>
+
   </body>
 </html>
