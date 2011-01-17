@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.uniluebeck.ifis.mvdbproject.joins.joinserver;
+package de.uniluebeck.ifis.mvdbproject.joins.node;
 
 import de.uniluebeck.ifis.mvdbproject.joins.shared.Relation;
 import java.util.ArrayList;

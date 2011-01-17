@@ -3,35 +3,39 @@
  * and open the template in the editor.
  */
 
-package de.uniluebeck.ifis.mvdbproject.joins.joinserver;
+package de.uniluebeck.ifis.mvdbproject.joins.joinnode;
 
-import java.util.List;
+import de.uniluebeck.ifis.mvdbproject.joins.node.Node;
 import de.uniluebeck.ifis.mvdbproject.joins.shared.Relation;
 import java.util.ArrayList;
-import org.junit.*;
+import java.util.List;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import static org.junit.Assert.*;
-
 /**
  *
  * @author hoschi
  */
-public class NestedLoopJoinTest {
+public class NodeTest {
 	Relation r,s,joined;
 
     // <editor-fold defaultstate="collapsed" desc="set up / tear down">
-	public NestedLoopJoinTest() {
+	public NodeTest() {
 	}
 
-	@org.junit.BeforeClass
+	@BeforeClass
 	public static void setUpClass() throws Exception {
 	}
 
-	@org.junit.AfterClass
+	@AfterClass
 	public static void tearDownClass() throws Exception {
 	}
 
-	@org.junit.Before
-	public void setUp() throws Exception {
+	@Before
+	public void setUp() {
 		r = new Relation("r");
 		r.addColumn("a");
 		r.addColumn("b");
@@ -94,18 +98,18 @@ public class NestedLoopJoinTest {
 		row.add("2");
 		joined.addRow(row);
 		row.clear();
-
 	}
 
-	@org.junit.After
-	public void tearDown() throws Exception {
+	@After
+	public void tearDown() {
 	}// </editor-fold>
 
 	@Test
-	public void testJoin() {
-		NestedLoopJoin instance = new NestedLoopJoin();
-		Relation test = instance.join(r,s,"b","d");
+	public void testJoin() throws Exception {
+		Node instance = new Node();
+		instance.add(s);
+		instance.join(r,"b","d");
+		Relation test = instance.getJoined();
 		assertArrayEquals(joined.toArray(), test.toArray());
 	}
-
 }

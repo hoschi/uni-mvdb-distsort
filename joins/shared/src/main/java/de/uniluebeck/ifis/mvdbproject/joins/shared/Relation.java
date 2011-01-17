@@ -4,6 +4,7 @@
  */
 package de.uniluebeck.ifis.mvdbproject.joins.shared;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -12,7 +13,7 @@ import java.util.List;
  *
  * @author hoschi
  */
-public class Relation {
+public class Relation implements Serializable{
 
 	private List<String> columnNames;
 	private List<List<String>> rows;
