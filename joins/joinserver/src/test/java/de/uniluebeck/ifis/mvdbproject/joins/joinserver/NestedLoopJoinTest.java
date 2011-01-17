@@ -48,7 +48,7 @@ public class NestedLoopJoinTest {
 		row.clear();
 
 		row.add("2");
-		row.add("1");
+		row.add("2");
 		r.addRow(row);
 		s.addRow(row);
 		row.clear();
@@ -87,24 +87,11 @@ public class NestedLoopJoinTest {
 		joined.addRow(row);
 		row.clear();
 
-		row.add("1");
-		row.add("1");
-		row.add("2");
-		row.add("1");
-		joined.addRow(row);
-
 		row.clear();
 		row.add("2");
-		row.add("1");
-		row.add("1");
-		row.add("1");
-		joined.addRow(row);
-
-		row.clear();
 		row.add("2");
-		row.add("1");
 		row.add("2");
-		row.add("1");
+		row.add("2");
 		joined.addRow(row);
 		row.clear();
 
