@@ -6,7 +6,9 @@
 package de.uniluebeck.ifis.mvdbproject.joins.joinnode;
 
 import de.uniluebeck.ifis.mvdbproject.joins.node.Node;
+import de.uniluebeck.ifis.mvdbproject.joins.shared.IJoinServer;
 import de.uniluebeck.ifis.mvdbproject.joins.shared.Relation;
+import de.uniluebeck.ifis.mvdbproject.joins.shared.TimeEntry;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.After;
@@ -15,6 +17,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import static org.easymock.EasyMock.*;
 /**
  *
  * @author hoschi
@@ -106,7 +109,12 @@ public class NodeTest {
 
 	@Test
 	public void testJoin() throws Exception {
-		Node instance = new Node();
+		IJoinServer server = createMock(IJoinServer.class);
+
+		server.addMeasurment((TimeEntry) anyObject());
+		expectLastCall().anyTimes();
+		
+		Node instance = new Node(server);
 		instance.add(s);
 		instance.join(r,"b","d");
 		Relation test = instance.getJoined();

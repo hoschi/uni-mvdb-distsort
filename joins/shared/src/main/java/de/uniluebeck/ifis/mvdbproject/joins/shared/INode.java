@@ -2,17 +2,17 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package de.uniluebeck.ifis.mvdbproject.joins.shared;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.util.List;
 
 /**
  *
  * @author hoschi
  */
-public interface INode  extends Remote{
+public interface INode extends Remote {
 
 	void add(Relation r) throws RemoteException;
 

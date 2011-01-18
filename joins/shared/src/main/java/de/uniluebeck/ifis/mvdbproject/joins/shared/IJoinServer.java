@@ -14,4 +14,5 @@ import java.rmi.RemoteException;
 public interface IJoinServer extends Remote {
 
 	void addNode(INode node)  throws RemoteException;
+	public void addMeasurment(TimeEntry entry) throws RemoteException;
 }

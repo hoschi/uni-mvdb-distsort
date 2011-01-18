@@ -34,7 +34,7 @@ public class Main {
 		IJoinServer stub = null;
 		try {
 			stub = (IJoinServer) Naming.lookup("rmi://" + hostname + "/joinserver");
-			stub.addNode(new Node());
+			stub.addNode(new Node(stub));
 		} catch (Exception exception) {
 			throw new RuntimeException(exception);
 		}
