@@ -6,6 +6,7 @@
 package de.uniluebeck.ifis.mvdbproject.joins.node;
 
 import de.uniluebeck.ifis.mvdbproject.joins.shared.IJoinServer;
+import de.uniluebeck.ifis.mvdbproject.joins.shared.TimeTracker;
 import java.net.UnknownHostException;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
@@ -34,7 +35,7 @@ public class Main {
 		IJoinServer stub = null;
 		try {
 			stub = (IJoinServer) Naming.lookup("rmi://" + hostname + "/joinserver");
-			stub.addNode(new Node(stub));
+			stub.addNode(new Node(new TimeTracker(stub)));
 		} catch (Exception exception) {
 			throw new RuntimeException(exception);
 		}

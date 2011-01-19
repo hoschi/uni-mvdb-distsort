@@ -88,15 +88,6 @@ public class Relation implements Serializable{
 		return columnNames.indexOf(name);
 	}
 
-	public Relation copy() {
-		Relation c = new Relation(name);
-		c.columnNames = new ArrayList<String>();
-		c.columnNames.addAll(columnNames);
-		c.rows = new ArrayList<List<String>>();
-		c.rows.addAll(rows);
-		return c;
-	}
-
 	public int getRowCount() {
 		return this.rows.size();
 	}

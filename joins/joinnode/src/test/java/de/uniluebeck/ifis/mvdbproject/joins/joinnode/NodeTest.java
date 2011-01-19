@@ -5,6 +5,7 @@
 
 package de.uniluebeck.ifis.mvdbproject.joins.joinnode;
 
+import de.uniluebeck.ifis.mvdbproject.joins.shared.TimeTracker;
 import de.uniluebeck.ifis.mvdbproject.joins.node.Node;
 import de.uniluebeck.ifis.mvdbproject.joins.shared.IJoinServer;
 import de.uniluebeck.ifis.mvdbproject.joins.shared.Relation;
@@ -108,15 +109,35 @@ public class NodeTest {
 	}// </editor-fold>
 
 	@Test
-	public void testJoin() throws Exception {
+	public void testJoinShipWhole() throws Exception {
+		System.out.println("ship whole test");
 		IJoinServer server = createMock(IJoinServer.class);
 
 		server.addMeasurment((TimeEntry) anyObject());
 		expectLastCall().anyTimes();
-		
-		Node instance = new Node(server);
+
+		TimeTracker tracker = new TimeTracker(server);
+		Node instance = new Node(tracker);
 		instance.add(s);
-		instance.join(r,"b","d");
+		instance.joinShipWhole(r,"b","d");
+		Relation test = instance.getJoined();
+		assertArrayEquals(joined.toArray(), test.toArray());
+	}
+
+	@Test
+	public void testFetchAsNeeded() throws Exception {
+		System.out.println("fetch as needed test");
+		IJoinServer server = createMock(IJoinServer.class);
+
+		server.addMeasurment((TimeEntry) anyObject());
+		expectLastCall().anyTimes();
+
+		TimeTracker tracker = new TimeTracker(server);
+		Node instance = new Node(tracker);
+		Node nodeR = new Node(tracker);
+		nodeR.add(r);
+		instance.add(s);
+		instance.joinFetchAsNeeded(nodeR.getRmiName(), nodeR.getPort(), "b","d");
 		Relation test = instance.getJoined();
 		assertArrayEquals(joined.toArray(), test.toArray());
 	}

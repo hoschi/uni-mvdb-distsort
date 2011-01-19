@@ -4,17 +4,20 @@
  */
 package de.uniluebeck.ifis.mvdbproject.joins.node;
 
+import de.uniluebeck.ifis.mvdbproject.joins.shared.INode;
 import de.uniluebeck.ifis.mvdbproject.joins.shared.Relation;
+import java.rmi.RemoteException;
+import java.util.Iterator;
 import java.util.List;
 
 /**
  *
  * @author hoschi
  */
-public class NestedLoopJoin extends AJoin {
+class FetchAsNeededJoin extends AJoin {
 
-	public Relation join(Relation r, Relation s, String columnR, String columnS) {
-		if (r == null || s == null) {
+	Relation join(INode node, Relation s, String columnR, String columnS) throws RemoteException {
+		if (node == null || s == null) {
 			throw new RuntimeException("no relation");
 		}
 
@@ -22,8 +25,8 @@ public class NestedLoopJoin extends AJoin {
 			throw new RuntimeException("no column");
 		}
 
-		initJoined(r,s);
-		int indexR = r.columnIndex(columnR);
+		initJoined(node.getColumnNames(), s);
+		int indexR = node.columnIndex(columnR);
 		int indexS = s.columnIndex(columnS);
 
 		if (indexR < 0 || indexS < 0) {
@@ -33,14 +36,16 @@ public class NestedLoopJoin extends AJoin {
 		// set up new relation
 
 		// join it
-		for (List<String> rowR : r.getRows()) {
-			for (List<String> rowS : s.getRows()) {
+		for (List<String> rowS : s.getRows()) {
+			while (node.hasNext()) {
+				List<String> rowR = node.next();
 				String valueS = rowS.get(indexS);
 				String valueR = rowR.get(indexR);
 				if (valueR.equals(valueS)) {
 					addToJoinedRelation(rowR, rowS);
 				}
 			}
+			node.resetIterator();
 		}
 		return joined;
 	}

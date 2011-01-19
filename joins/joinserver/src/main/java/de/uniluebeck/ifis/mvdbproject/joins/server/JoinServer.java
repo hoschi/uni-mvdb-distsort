@@ -10,6 +10,7 @@ import de.uniluebeck.ifis.mvdbproject.joins.shared.Relation;
 import de.uniluebeck.ifis.mvdbproject.joins.shared.TimeEntry;
 import de.uniluebeck.ifis.mvdbproject.joins.shared.TimeTracker;
 import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -19,14 +20,15 @@ import java.util.List;
  *
  * @author hoschi
  */
-public class JoinServer extends TimeTracker implements IJoinServer {
+public class JoinServer extends UnicastRemoteObject implements IJoinServer {
 
 	List<INode> nodes;
 	protected List<TimeEntry> measurements;
+	TimeTracker tracker;
 
 	public JoinServer() throws RemoteException {
-		super(null);
 		this.nodes = new ArrayList<INode>();
+
 	}
 
 	public void addNode(INode node) throws RemoteException {
@@ -41,17 +43,40 @@ public class JoinServer extends TimeTracker implements IJoinServer {
 
 		INode node = nodes.get(0);
 
-		takeTime("invoke: add");
+		tracker.takeTime("invoke: add");
 		node.add(s);
-		takeTime("msg client -> server: add");
+		tracker.takeTime("msg client -> server: add");
 
-		takeTime("invoke: join");
-		node.join(r, columnR, columnS);
-		takeTime("msg client -> server: join");
+		tracker.takeTime("invoke: join");
+		node.joinShipWhole(r, columnR, columnS);
+		tracker.takeTime("msg client -> server: join");
 
-		takeTime("invoke: getjoined");
+		tracker.takeTime("invoke: getjoined");
 		Relation joined = node.getJoined();
-		takeTime("msg client -> server: getjoined");
+		tracker.takeTime("msg client -> server: getjoined");
+
+		return joined;
+	}
+
+	public Relation joinFetchAsNeeded(Relation r, Relation s, String columnR, String columnS) throws RemoteException {
+		if (nodes == null || nodes.size() < 2) {
+			throw new RuntimeException("not enought nodes to do that");
+		}
+
+		INode nodeS = nodes.get(0);
+		INode nodeR = nodes.get(1);
+
+		// set up nodes
+		nodeR.add(r);
+		nodeS.add(s);
+
+		tracker.takeTime("invoke: join");
+		nodeS.joinFetchAsNeeded(nodeR.getRmiName(), nodeR.getPort(), columnR, columnS);
+		tracker.takeTime("msg client -> server: join");
+
+		tracker.takeTime("invoke: getjoined");
+		Relation joined = nodeS.getJoined();
+		tracker.takeTime("msg client -> server: getjoined");
 
 		return joined;
 	}
@@ -62,7 +87,7 @@ public class JoinServer extends TimeTracker implements IJoinServer {
 	}
 
 	public void startMeasurements() throws RemoteException {
-		this.server = this;
+		tracker = new TimeTracker(this);
 		measurements = new ArrayList<TimeEntry>();
 	}
 

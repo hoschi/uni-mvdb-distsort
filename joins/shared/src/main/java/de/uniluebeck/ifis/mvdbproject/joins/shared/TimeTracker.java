@@ -18,14 +18,14 @@ import java.util.logging.Logger;
  *
  * @author hoschi
  */
-public class TimeTracker extends UnicastRemoteObject {
+public class TimeTracker {
 	protected IJoinServer server;
 
 	public TimeTracker(IJoinServer server) throws RemoteException {
 		this.server = server;
 	}
 
-	protected void takeTime(String msg) throws RemoteException {
+	public void takeTime(String msg) throws RemoteException {
 		if (server == null)
 			throw new RuntimeException("no server connected");
 

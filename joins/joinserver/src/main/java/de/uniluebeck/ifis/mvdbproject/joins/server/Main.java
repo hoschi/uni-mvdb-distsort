@@ -59,7 +59,9 @@ public class Main {
 		}
 		System.out.println("started");
 		//joinShipWholeTest((JoinServer) server);
-		joinShipWhole((JoinServer) server);
+		//joinShipWhole((JoinServer) server);
+		joinFetchAsNeededTest((JoinServer) server);
+		//joinFetchAsNeeded((JoinServer) server);
 
 	}
 
@@ -127,14 +129,14 @@ public class Main {
 		s.addColumn("c");
 		s.addColumn("d");
 
-		int rows = 10000;
+		int rows = 1000;
 		for (int i = 0; i < rows; ++i) {
-			List<String> list = randomData(2);
+			List<String> list = randomData(2, rows);
 			r.addRow(list);
 			System.out.print("*");
 		}
 		for (int i = 0; i < rows; ++i) {
-			List<String> list = randomData(2);
+			List<String> list = randomData(2, rows);
 			s.addRow(list);
 			System.out.print("*");
 		}
@@ -149,13 +151,99 @@ public class Main {
 
 	}
 
-	private static List<String> randomData(int count) {
+	private static void joinFetchAsNeededTest(JoinServer server) throws RemoteException {
+		server.startMeasurements();
+		Relation r, s;
+		r = new Relation("r");
+		r.addColumn("a");
+		r.addColumn("b");
+
+		s = new Relation("s");
+		s.addColumn("c");
+		s.addColumn("d");
+
+		List<String> row = new ArrayList<String>();
+		row.add("1");
+		row.add("1");
+		r.addRow(row);
+		s.addRow(row);
+		row.clear();
+
+		row.add("2");
+		row.add("2");
+		r.addRow(row);
+		s.addRow(row);
+		row.clear();
+
+		// add rows that don't join
+		row.add("3");
+		row.add("-1");
+		r.addRow(row);
+		row.clear();
+
+		row.add("3");
+		row.add("-2");
+		s.addRow(row);
+		row.clear();
+
+		row.add("4");
+		row.add("-3");
+		r.addRow(row);
+		row.clear();
+
+		row.add("4");
+		row.add("-4");
+		s.addRow(row);
+		row.clear();
+		Relation test = server.joinFetchAsNeeded(r, s, "b", "d");
+		System.out.print(test.toString());
+		server.printLastMeasurements();
+
+	}
+
+	private static void joinFetchAsNeeded(JoinServer server) throws RemoteException {
+		server.startMeasurements();
+
+		System.out.println("generate data");
+
+		Relation r, s;
+		r = new Relation("r");
+		r.addColumn("a");
+		r.addColumn("b");
+
+		s = new Relation("s");
+		s.addColumn("c");
+		s.addColumn("d");
+
+		int rows = 1000;
+		for (int i = 0; i < rows; ++i) {
+			List<String> list = randomData(2, rows);
+			r.addRow(list);
+			System.out.print("*");
+		}
+		for (int i = 0; i < rows; ++i) {
+			List<String> list = randomData(2, rows);
+			s.addRow(list);
+			System.out.print("*");
+		}
+
+		System.out.println("generate data - finished");
+		Relation test = server.joinFetchAsNeeded(r, s, "b", "d");
+		server.printLastMeasurements();
+
+		System.out.println("r has " + r.getRowCount() + " rows");
+		System.out.println("s has " + s.getRowCount() + " rows");
+		System.out.println("joined has " + test.getRowCount() + " rows");
+
+	}
+
+	private static List<String> randomData(int count, int border) {
 		List<String> list = new ArrayList<String>();
 
 		Random rand = new Random();
 		for (int i = 0; i
 				< count; i++) {
-			list.add(new Integer(rand.nextInt(count)).toString());
+			list.add(new Integer(rand.nextInt(border)).toString());
 
 
 		}
