@@ -58,14 +58,17 @@ public class Main {
 			}
 		}
 		System.out.println("started");
-		//joinShipWholeTest((JoinServer) server);
-		//joinShipWhole((JoinServer) server);
+		/*
+		joinShipWholeTest((JoinServer) server);
 		joinFetchAsNeededTest((JoinServer) server);
-		//joinFetchAsNeeded((JoinServer) server);
+		 */
 
+		joinShipWhole((JoinServer) server);
+		joinFetchAsNeeded((JoinServer) server);
 	}
 
 	private static void joinShipWholeTest(JoinServer server) throws RemoteException {
+		System.out.println("joinShipWholeTest");
 		server.startMeasurements();
 		Relation r, s;
 		r = new Relation("r");
@@ -111,13 +114,16 @@ public class Main {
 		row.clear();
 		Relation test = server.joinShipWhole(r, s, "b", "d");
 		System.out.print(test.toString());
-		server.printLastMeasurements();
+		System.out.println();
+		System.out.println();
+		server.printLastMeasurementsWithDetails();
 
 	}
 
 	private static void joinShipWhole(JoinServer server) throws RemoteException {
+		System.out.println("joinShipWhole");
 		server.startMeasurements();
-		
+
 		System.out.println("generate data");
 
 		Relation r, s;
@@ -152,6 +158,7 @@ public class Main {
 	}
 
 	private static void joinFetchAsNeededTest(JoinServer server) throws RemoteException {
+		System.out.println("joinFetchAsNeededTest");
 		server.startMeasurements();
 		Relation r, s;
 		r = new Relation("r");
@@ -197,11 +204,14 @@ public class Main {
 		row.clear();
 		Relation test = server.joinFetchAsNeeded(r, s, "b", "d");
 		System.out.print(test.toString());
-		server.printLastMeasurements();
+		System.out.println();
+		System.out.println();
+		server.printLastMeasurementsWithDetails();
 
 	}
 
 	private static void joinFetchAsNeeded(JoinServer server) throws RemoteException {
+		System.out.println("joinFetchAsNeeded");
 		server.startMeasurements();
 
 		System.out.println("generate data");

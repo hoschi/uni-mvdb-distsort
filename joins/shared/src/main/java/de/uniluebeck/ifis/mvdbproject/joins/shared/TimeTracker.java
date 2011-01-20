@@ -20,18 +20,32 @@ import java.util.logging.Logger;
  */
 public class TimeTracker {
 	protected IJoinServer server;
+	int tabwith;
+	
 
 	public TimeTracker(IJoinServer server) throws RemoteException {
 		this.server = server;
 	}
 
-	public void takeTime(String msg) throws RemoteException {
+	public void takeTime(String msg, TimeEntry.Type type) throws RemoteException {
 		if (server == null)
 			throw new RuntimeException("no server connected");
 
 		server.addMeasurment(
 					new TimeEntry(msg,
-					GregorianCalendar.getInstance().getTime()));
-		System.out.println(msg);
+					GregorianCalendar.getInstance().getTime(),
+					type, false));
+		System.out.println(msg + ": " + type);
+	}
+
+	public void takeTime(String msg, TimeEntry.Type type, boolean stuff) throws RemoteException {
+		if (server == null)
+			throw new RuntimeException("no server connected");
+
+		server.addMeasurment(
+					new TimeEntry(msg,
+					GregorianCalendar.getInstance().getTime(),
+					type, stuff));
+		System.out.println(msg + ": " + type);
 	}
 }

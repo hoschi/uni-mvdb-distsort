@@ -6,6 +6,7 @@ package de.uniluebeck.ifis.mvdbproject.joins.node;
 
 import de.uniluebeck.ifis.mvdbproject.joins.shared.INode;
 import de.uniluebeck.ifis.mvdbproject.joins.shared.Relation;
+import de.uniluebeck.ifis.mvdbproject.joins.shared.TimeEntry.Type;
 import de.uniluebeck.ifis.mvdbproject.joins.shared.TimeTracker;
 import java.io.IOException;
 import java.net.DatagramSocket;
@@ -51,35 +52,37 @@ public class Node extends UnicastRemoteObject implements INode {
 
 	@Override
 	public void add(Relation r) throws RemoteException {
-		tracker.takeTime("\tmsg server -> client: add");
+		tracker.takeTime("add", Type.get);
 		relations.add(r);
-		tracker.takeTime("\tadding finished");
+		tracker.takeTime("add", Type.replay);
 	}
 
 	/*
 	 * join method for "ship whole" mode
 	 */
+	@Override
 	public void joinShipWhole(Relation r, String columnR, String columnS)
 			throws RemoteException {
-		tracker.takeTime("\tmsg server -> client: join");
+		tracker.takeTime("join", Type.get);
 		if (relations == null || relations.isEmpty()
 				|| relations.get(0).hasColumn(columnS) == false) {
 			throw new RuntimeException("can't join this");
 		}
 		NestedLoopJoin join = new NestedLoopJoin();
 		this.joined = join.join(r, relations.get(0), columnR, columnS);
-		tracker.takeTime("\tjoining finished");
+		tracker.takeTime("join", Type.replay);
 	}
 
 	@Override
 	public Relation getJoined() throws RemoteException {
-		tracker.takeTime("\tmsg server -> client: getjoined");
-		tracker.takeTime("\treturning finished");
+		tracker.takeTime("getjoined", Type.get);
+		tracker.takeTime("getjoined", Type.replay);
 		return this.joined;
 	}
 
+	@Override
 	public void joinFetchAsNeeded(String nodeName, int port, String columnR, String columnS) throws RemoteException {
-		tracker.takeTime("\tmsg server -> client: join");
+		tracker.takeTime("join", Type.get);
 		if (relations == null || relations.isEmpty()
 				|| relations.get(0).hasColumn(columnS) == false) {
 			throw new RuntimeException("can't join this");
@@ -88,11 +91,12 @@ public class Node extends UnicastRemoteObject implements INode {
 		if (node == null) {
 			throw new RuntimeException("no node with name " + nodeName);
 		}
-		FetchAsNeededJoin join = new FetchAsNeededJoin();
+		FetchAsNeededJoin join = new FetchAsNeededJoin(tracker);
 		this.joined = join.join(node, relations.get(0), columnR, columnS);
-		tracker.takeTime("\tjoining finished");
+		tracker.takeTime("join", Type.replay);
 	}
 
+	@Override
 	public int columnIndex(String columnR) {
 		if (relations == null || relations.isEmpty()) {
 			throw new RuntimeException("no relation attached");
@@ -100,6 +104,7 @@ public class Node extends UnicastRemoteObject implements INode {
 		return this.relations.get(0).columnIndex(columnR);
 	}
 
+	@Override
 	public List<String> getColumnNames() {
 		if (relations == null || relations.isEmpty()) {
 			throw new RuntimeException("no relation attached");
@@ -107,6 +112,7 @@ public class Node extends UnicastRemoteObject implements INode {
 		return this.relations.get(0).getColumnNames();
 	}
 
+	@Override
 	public boolean hasNext() throws RemoteException {
 		if (relations == null || relations.isEmpty()) {
 			throw new RuntimeException("no relation attached");
@@ -117,13 +123,16 @@ public class Node extends UnicastRemoteObject implements INode {
 		}
 	}
 
+	@Override
 	public List<String> next() throws RemoteException {
+		tracker.takeTime("get row", Type.get, true);
 		if (relations == null || relations.isEmpty()) {
 			throw new RuntimeException("no relation attached");
 		} else {
 			List<String> row = this.relations.get(0).getRow(this.counter);
 			counter++;
-			//System.out.println("\t\treturning row -> " + row.toString());
+			//System.out.println("row -> " + row.toString());
+			tracker.takeTime("get row", Type.replay, true);
 			return row;
 		}
 	}
@@ -146,6 +155,7 @@ public class Node extends UnicastRemoteObject implements INode {
 		return node;
 	}
 
+	@Override
 	public String getRmiName() throws RemoteException {
 		String name = null;
 		if (bound == false) {
@@ -161,6 +171,7 @@ public class Node extends UnicastRemoteObject implements INode {
 		return name;
 	}
 
+	@Override
 	public void bindNode() throws RemoteException {
 		while (available(port) == false) {
 			Random random = new Random();
@@ -181,6 +192,7 @@ public class Node extends UnicastRemoteObject implements INode {
 		this.counter = 0;
 	}
 
+	@Override
 	public int getPort() throws RemoteException {
 		return port;
 	}
