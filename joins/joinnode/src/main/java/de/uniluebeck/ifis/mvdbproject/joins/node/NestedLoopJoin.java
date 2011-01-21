@@ -13,18 +13,16 @@ import java.util.List;
  */
 public class NestedLoopJoin extends AJoin {
 
-	public Relation join(Relation r, Relation s, String columnR, String columnS) {
+	public Relation join(Relation r, Relation s) {
 		if (r == null || s == null) {
 			throw new RuntimeException("no relation");
 		}
 
-		if (columnR == null || columnS == null) {
-			throw new RuntimeException("no column");
-		}
+		String column = r.findSameColumn(s);
 
 		initJoined(r,s);
-		int indexR = r.columnIndex(columnR);
-		int indexS = s.columnIndex(columnS);
+		int indexR = r.columnIndex(column);
+		int indexS = s.columnIndex(column);
 
 		if (indexR < 0 || indexS < 0) {
 			throw new RuntimeException("column not found");
@@ -42,6 +40,8 @@ public class NestedLoopJoin extends AJoin {
 				}
 			}
 		}
+
+		joined.filterDoubles();
 		return joined;
 	}
 }

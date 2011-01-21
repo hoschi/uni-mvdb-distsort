@@ -42,11 +42,11 @@ public class NodeTest {
 	public void setUp() {
 		r = new Relation("r");
 		r.addColumn("a");
-		r.addColumn("b");
+		r.addColumn("j");
 
 		s = new Relation("s");
-		s.addColumn("c");
-		s.addColumn("d");
+		s.addColumn("b");
+		s.addColumn("j");
 
 		List<String> row = new ArrayList<String>();
 		row.add("1");
@@ -85,10 +85,8 @@ public class NodeTest {
 		joined = new Relation("joined");
 		joined.addColumn("a");
 		joined.addColumn("b");
-		joined.addColumn("c");
-		joined.addColumn("d");
+		joined.addColumn("j");
 
-		row.add("1");
 		row.add("1");
 		row.add("1");
 		row.add("1");
@@ -96,7 +94,6 @@ public class NodeTest {
 		row.clear();
 
 		row.clear();
-		row.add("2");
 		row.add("2");
 		row.add("2");
 		row.add("2");
@@ -119,7 +116,7 @@ public class NodeTest {
 		TimeTracker tracker = new TimeTracker(server);
 		Node instance = new Node(tracker);
 		instance.add(s);
-		instance.joinShipWhole(r,"b","d");
+		instance.joinShipWhole(r);
 		Relation test = instance.getJoined();
 		assertArrayEquals(joined.toArray(), test.toArray());
 	}
@@ -137,7 +134,25 @@ public class NodeTest {
 		Node nodeR = new Node(tracker);
 		nodeR.add(r);
 		instance.add(s);
-		instance.joinFetchAsNeeded(nodeR.getRmiName(), nodeR.getPort(), "b","d");
+		instance.joinFetchAsNeeded(nodeR.getRmiName(), nodeR.getPort());
+		Relation test = instance.getJoined();
+		assertArrayEquals(joined.toArray(), test.toArray());
+	}
+
+	@Test
+	public void testSemiJoinV1V2() throws Exception {
+		System.out.println("fetch as needed test");
+		IJoinServer server = createMock(IJoinServer.class);
+
+		server.addMeasurment((TimeEntry) anyObject());
+		expectLastCall().anyTimes();
+
+		TimeTracker tracker = new TimeTracker(server);
+		Node instance = new Node(tracker);
+		Node nodeR = new Node(tracker);
+		nodeR.add(r);
+		instance.add(s);
+		instance.joinSemiV1V2(nodeR.getRmiName(), nodeR.getPort());
 		Relation test = instance.getJoined();
 		assertArrayEquals(joined.toArray(), test.toArray());
 	}

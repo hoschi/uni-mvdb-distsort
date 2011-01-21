@@ -17,11 +17,13 @@ public interface INode extends Remote {
 
 	public void add(Relation r) throws RemoteException;
 
+	public void clear() throws RemoteException;
+
 	public Relation getJoined() throws RemoteException;
 
-	public void joinShipWhole(Relation r, String columnR, String columnS) throws RemoteException;
+	public void joinShipWhole(Relation r) throws RemoteException;
 
-	public void joinFetchAsNeeded(String nodeName, int port, String columnR, String columnS) throws RemoteException;
+	public void joinFetchAsNeeded(String nodeName, int port) throws RemoteException;
 
 	public int columnIndex(String columnR) throws RemoteException;
 
@@ -37,5 +39,9 @@ public interface INode extends Remote {
 
 	public void resetIterator() throws RemoteException;
 
-	public int getPort()  throws RemoteException;
+	public int getPort() throws RemoteException;
+
+	public void joinSemiV1V2(String rmiName, int port) throws RemoteException;
+
+	public Relation semiJoinWith(Relation joinRelation) throws RemoteException;
 }

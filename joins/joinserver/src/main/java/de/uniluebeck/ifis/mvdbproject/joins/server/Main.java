@@ -22,6 +22,7 @@ import java.util.logging.Logger;
  * @author hoschi
  */
 public class Main {
+	static int rows = 10000;
 
 	public static void main(String[] args) throws RemoteException {
 		final IJoinServer server;
@@ -58,13 +59,19 @@ public class Main {
 			}
 		}
 		System.out.println("started");
-		/*
+
+
 		joinShipWholeTest((JoinServer) server);
 		joinFetchAsNeededTest((JoinServer) server);
-		 */
+		joinSemiVersion1Test((JoinServer) server);
+		joinSemiVersion2Test((JoinServer) server);
 
+		
 		joinShipWhole((JoinServer) server);
-		joinFetchAsNeeded((JoinServer) server);
+		//joinFetchAsNeeded((JoinServer) server);
+		joinSemiVersion1((JoinServer) server);
+		joinSemiVersion2((JoinServer) server);
+		
 	}
 
 	private static void joinShipWholeTest(JoinServer server) throws RemoteException {
@@ -73,11 +80,11 @@ public class Main {
 		Relation r, s;
 		r = new Relation("r");
 		r.addColumn("a");
-		r.addColumn("b");
+		r.addColumn("j");
 
 		s = new Relation("s");
-		s.addColumn("c");
-		s.addColumn("d");
+		s.addColumn("b");
+		s.addColumn("j");
 
 		List<String> row = new ArrayList<String>();
 		row.add("1");
@@ -112,7 +119,7 @@ public class Main {
 		row.add("-4");
 		s.addRow(row);
 		row.clear();
-		Relation test = server.joinShipWhole(r, s, "b", "d");
+		Relation test = server.joinShipWhole(r, s);
 		System.out.print(test.toString());
 		System.out.println();
 		System.out.println();
@@ -121,7 +128,9 @@ public class Main {
 	}
 
 	private static void joinShipWhole(JoinServer server) throws RemoteException {
+		System.out.println("=================================");
 		System.out.println("joinShipWhole");
+		System.out.println("=================================");
 		server.startMeasurements();
 
 		System.out.println("generate data");
@@ -129,13 +138,13 @@ public class Main {
 		Relation r, s;
 		r = new Relation("r");
 		r.addColumn("a");
-		r.addColumn("b");
+		r.addColumn("j");
 
 		s = new Relation("s");
-		s.addColumn("c");
-		s.addColumn("d");
+		s.addColumn("b");
+		s.addColumn("j");
 
-		int rows = 1000;
+		
 		for (int i = 0; i < rows; ++i) {
 			List<String> list = randomData(2, rows);
 			r.addRow(list);
@@ -148,7 +157,7 @@ public class Main {
 		}
 
 		System.out.println("generate data - finished");
-		Relation test = server.joinShipWhole(r, s, "b", "d");
+		Relation test = server.joinShipWhole(r, s);
 		server.printLastMeasurements();
 
 		System.out.println("r has " + r.getRowCount() + " rows");
@@ -163,11 +172,11 @@ public class Main {
 		Relation r, s;
 		r = new Relation("r");
 		r.addColumn("a");
-		r.addColumn("b");
+		r.addColumn("j");
 
 		s = new Relation("s");
-		s.addColumn("c");
-		s.addColumn("d");
+		s.addColumn("b");
+		s.addColumn("j");
 
 		List<String> row = new ArrayList<String>();
 		row.add("1");
@@ -202,7 +211,7 @@ public class Main {
 		row.add("-4");
 		s.addRow(row);
 		row.clear();
-		Relation test = server.joinFetchAsNeeded(r, s, "b", "d");
+		Relation test = server.joinFetchAsNeeded(r, s);
 		System.out.print(test.toString());
 		System.out.println();
 		System.out.println();
@@ -211,7 +220,9 @@ public class Main {
 	}
 
 	private static void joinFetchAsNeeded(JoinServer server) throws RemoteException {
+		System.out.println("=================================");
 		System.out.println("joinFetchAsNeeded");
+		System.out.println("=================================");
 		server.startMeasurements();
 
 		System.out.println("generate data");
@@ -219,13 +230,13 @@ public class Main {
 		Relation r, s;
 		r = new Relation("r");
 		r.addColumn("a");
-		r.addColumn("b");
+		r.addColumn("j");
 
 		s = new Relation("s");
-		s.addColumn("c");
-		s.addColumn("d");
+		s.addColumn("b");
+		s.addColumn("j");
 
-		int rows = 1000;
+		
 		for (int i = 0; i < rows; ++i) {
 			List<String> list = randomData(2, rows);
 			r.addRow(list);
@@ -238,12 +249,198 @@ public class Main {
 		}
 
 		System.out.println("generate data - finished");
-		Relation test = server.joinFetchAsNeeded(r, s, "b", "d");
+		Relation test = server.joinFetchAsNeeded(r, s);
 		server.printLastMeasurements();
 
 		System.out.println("r has " + r.getRowCount() + " rows");
 		System.out.println("s has " + s.getRowCount() + " rows");
 		System.out.println("joined has " + test.getRowCount() + " rows");
+
+	}
+
+	private static void joinSemiVersion1Test(JoinServer server) throws RemoteException {
+		System.out.println("joinSemiVersion1Test");
+		server.startMeasurements();
+		Relation r, s;
+		r = new Relation("r");
+		r.addColumn("a");
+		r.addColumn("j");
+
+		s = new Relation("s");
+		s.addColumn("b");
+		s.addColumn("j");
+
+		List<String> row = new ArrayList<String>();
+		row.add("1");
+		row.add("1");
+		r.addRow(row);
+		s.addRow(row);
+		row.clear();
+
+		row.add("2");
+		row.add("2");
+		r.addRow(row);
+		s.addRow(row);
+		row.clear();
+
+		// add rows that don't join
+		row.add("3");
+		row.add("-1");
+		r.addRow(row);
+		row.clear();
+
+		row.add("3");
+		row.add("-2");
+		s.addRow(row);
+		row.clear();
+
+		row.add("4");
+		row.add("-3");
+		r.addRow(row);
+		row.clear();
+
+		row.add("4");
+		row.add("-4");
+		s.addRow(row);
+		row.clear();
+		Relation test = server.joinSemiVersion1(r, s);
+		System.out.print(test.toString());
+		System.out.println();
+		System.out.println();
+		server.printLastMeasurementsWithDetails();
+
+	}
+
+	private static void joinSemiVersion1(JoinServer server) throws RemoteException {
+		System.out.println("=================================");
+		System.out.println("joinSemiVersion1");
+		System.out.println("=================================");
+		server.startMeasurements();
+
+		System.out.println("generate data");
+
+		Relation r, s;
+		r = new Relation("r");
+		r.addColumn("a");
+		r.addColumn("j");
+
+		s = new Relation("s");
+		s.addColumn("b");
+		s.addColumn("j");
+
+		
+		for (int i = 0; i < rows; ++i) {
+			List<String> list = randomData(2, rows);
+			r.addRow(list);
+			System.out.print("*");
+		}
+		for (int i = 0; i < rows; ++i) {
+			List<String> list = randomData(2, rows);
+			s.addRow(list);
+			System.out.print("*");
+		}
+
+		System.out.println("generate data - finished");
+		Relation test = server.joinSemiVersion1(r, s);
+		server.printLastMeasurements();
+
+		System.out.println("r has " + r.getRowCount() + " rows");
+		System.out.println("s has " + s.getRowCount() + " rows");
+		System.out.println("joined has " + test.getRowCount() + " rows");
+
+	}
+
+	private static void joinSemiVersion2Test(JoinServer server) throws RemoteException {
+		System.out.println("joinSemiVersion2Test");
+		server.startMeasurements();
+		Relation r, s;
+		r = new Relation("r");
+		r.addColumn("a");
+		r.addColumn("j");
+
+		s = new Relation("s");
+		s.addColumn("b");
+		s.addColumn("j");
+
+		List<String> row = new ArrayList<String>();
+		row.add("1");
+		row.add("1");
+		r.addRow(row);
+		s.addRow(row);
+		row.clear();
+
+		row.add("2");
+		row.add("2");
+		r.addRow(row);
+		s.addRow(row);
+		row.clear();
+
+		// add rows that don't join
+		row.add("3");
+		row.add("-1");
+		r.addRow(row);
+		row.clear();
+
+		row.add("3");
+		row.add("-2");
+		s.addRow(row);
+		row.clear();
+
+		row.add("4");
+		row.add("-3");
+		r.addRow(row);
+		row.clear();
+
+		row.add("4");
+		row.add("-4");
+		s.addRow(row);
+		row.clear();
+		Relation test = server.joinSemiVersion2(r, s);
+		System.out.print(test.toString());
+		System.out.println();
+		System.out.println();
+		server.printLastMeasurementsWithDetails();
+
+	}
+
+	private static void joinSemiVersion2(JoinServer server) throws RemoteException {
+		System.out.println("=================================");
+		System.out.println("joinSemiVersion2");
+		System.out.println("=================================");
+		server.startMeasurements();
+
+		System.out.println("generate data");
+
+		Relation r, s;
+		r = new Relation("r");
+		r.addColumn("a");
+		r.addColumn("j");
+
+		s = new Relation("s");
+		s.addColumn("b");
+		s.addColumn("j");
+
+		
+		for (int i = 0; i < rows; ++i) {
+			List<String> list = randomData(2, rows);
+			r.addRow(list);
+			System.out.print("*");
+		}
+		for (int i = 0; i < rows; ++i) {
+			List<String> list = randomData(2, rows);
+			s.addRow(list);
+			System.out.print("*");
+		}
+
+		System.out.println("generate data - finished");
+		Relation test = server.joinSemiVersion2(r, s);
+		server.printLastMeasurements();
+
+		System.out.println("r has " + r.getRowCount() + " rows");
+		System.out.println("s has " + s.getRowCount() + " rows");
+		System.out.println("joined has " + test.getRowCount() + " rows");
+		
+
 
 	}
 

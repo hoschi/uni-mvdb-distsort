@@ -15,17 +15,17 @@ import java.util.List;
  *
  * @author hoschi
  */
-class FetchAsNeededJoin extends AJoin {
+class SemiJoinV1V2 extends AJoin {
+
 	TimeTracker tracker;
 
-	public FetchAsNeededJoin(TimeTracker tracker) {
+	public SemiJoinV1V2(TimeTracker tracker) {
 		this.tracker = tracker;
 	}
 
-
 	Relation join(INode node, Relation s) throws RemoteException {
 		if (node == null || s == null) {
-			throw new RuntimeException("no relation");
+			throw new RuntimeException("no nodes or relation");
 		}
 
 		String column = s.findSameColumn(node.getColumnNames());
@@ -34,27 +34,26 @@ class FetchAsNeededJoin extends AJoin {
 		int indexR = node.columnIndex(column);
 		int indexS = s.columnIndex(column);
 
-		if (indexR < 0 || indexS < 0) {
-			throw new RuntimeException("column not found");
-		}
-
-		// set up new relation
+		Relation shrinked = projectTo(s, column);
+		tracker.takeTime("semi join", Type.invoke, true);
+		Relation rSemi = node.semiJoinWith(shrinked);
+		tracker.takeTime("semi join", Type.received, true);
 
 		// join it
-		for (List<String> rowS : s.getRows()) {
-			while (node.hasNext()) {
-				tracker.takeTime("get row", Type.invoke, true);
-				List<String> rowR = node.next();
-				tracker.takeTime("get row", Type.received, true);
+		for (List<String> rowR : rSemi.getRows()) {
+			for (List<String> rowS : s.getRows()) {
 				String valueS = rowS.get(indexS);
 				String valueR = rowR.get(indexR);
 				if (valueR.equals(valueS)) {
 					addToJoinedRelation(rowR, rowS);
 				}
 			}
-			node.resetIterator();
 		}
 		joined.filterDoubles();
 		return joined;
 	}
+
+
+
+
 }

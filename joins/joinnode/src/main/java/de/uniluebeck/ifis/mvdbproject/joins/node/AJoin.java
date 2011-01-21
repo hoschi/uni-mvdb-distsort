@@ -37,6 +37,16 @@ abstract class AJoin {
 		}
 	}
 
+	protected void initJoined(List<String> columnNames, List<String> columnNames0) {
+		this.joined = new Relation("joined");
+		for (String name : columnNames) {
+			joined.addColumn(name);
+		}
+		for (String name : columnNames0) {
+			joined.addColumn(name);
+		}
+	}
+
 	protected void addToJoinedRelation(
 			List<String> rowR,
 			List<String> rowS) {
@@ -49,4 +59,19 @@ abstract class AJoin {
 		}
 		this.joined.addRow(newRow);
 	}
+
+	protected Relation projectTo(Relation s, String columnS) {
+		int index = s.columnIndex(columnS);
+		Relation ret = new Relation("project to " + columnS);
+		ret.addColumn(columnS);
+
+		List<String> myrow;
+		for (List<String> row : s.getRows()) {
+			myrow = new ArrayList<String>();
+			myrow.add(row.get(index));
+			ret.addRow(myrow);
+		}
+		return ret;
+	}
+
 }

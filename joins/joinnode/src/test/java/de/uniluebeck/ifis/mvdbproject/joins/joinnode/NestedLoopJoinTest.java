@@ -35,11 +35,11 @@ public class NestedLoopJoinTest {
 	public void setUp() throws Exception {
 		r = new Relation("r");
 		r.addColumn("a");
-		r.addColumn("b");
+		r.addColumn("j");
 
 		s = new Relation("s");
-		s.addColumn("c");
-		s.addColumn("d");
+		s.addColumn("b");
+		s.addColumn("j");
 
 		List<String> row = new ArrayList<String>();
 		row.add("1");
@@ -78,10 +78,8 @@ public class NestedLoopJoinTest {
 		joined = new Relation("joined");
 		joined.addColumn("a");
 		joined.addColumn("b");
-		joined.addColumn("c");
-		joined.addColumn("d");
+		joined.addColumn("j");
 
-		row.add("1");
 		row.add("1");
 		row.add("1");
 		row.add("1");
@@ -89,7 +87,6 @@ public class NestedLoopJoinTest {
 		row.clear();
 
 		row.clear();
-		row.add("2");
 		row.add("2");
 		row.add("2");
 		row.add("2");
@@ -105,7 +102,7 @@ public class NestedLoopJoinTest {
 	@Test
 	public void testJoin() {
 		NestedLoopJoin instance = new NestedLoopJoin();
-		Relation test = instance.join(r,s,"b","d");
+		Relation test = instance.join(r,s);
 		assertArrayEquals(joined.toArray(), test.toArray());
 	}
 

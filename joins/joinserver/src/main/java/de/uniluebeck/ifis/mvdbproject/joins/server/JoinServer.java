@@ -37,7 +37,14 @@ public class JoinServer extends UnicastRemoteObject implements IJoinServer {
 
 	}
 
-	public Relation joinShipWhole(Relation r, Relation s, String columnR, String columnS) throws RemoteException {
+	public void clear() throws RemoteException {
+		for (INode node : nodes) {
+			node.clear();
+		}
+		measurements = new ArrayList<TimeEntry>();
+	}
+
+	public Relation joinShipWhole(Relation r, Relation s) throws RemoteException {
 		if (nodes.isEmpty()) {
 			throw new RuntimeException("not enought nodes to do that");
 		}
@@ -49,7 +56,7 @@ public class JoinServer extends UnicastRemoteObject implements IJoinServer {
 		tracker.takeTime("add", TimeEntry.Type.received);
 
 		tracker.takeTime("join", TimeEntry.Type.invoke);
-		node.joinShipWhole(r, columnR, columnS);
+		node.joinShipWhole(r);
 		tracker.takeTime("join", TimeEntry.Type.received);
 
 		tracker.takeTime("getjoined", TimeEntry.Type.invoke);
@@ -59,12 +66,12 @@ public class JoinServer extends UnicastRemoteObject implements IJoinServer {
 		return joined;
 	}
 
-	public Relation joinFetchAsNeeded(Relation r, Relation s, String columnR, String columnS) throws RemoteException {
+	public Relation joinFetchAsNeeded(Relation r, Relation s) throws RemoteException {
 		if (nodes == null || nodes.size() < 2) {
 			throw new RuntimeException("not enought nodes to do that");
 		}
 
-		
+
 		INode nodeS = nodes.get(0);
 		INode nodeR = nodes.get(1);
 
@@ -78,7 +85,63 @@ public class JoinServer extends UnicastRemoteObject implements IJoinServer {
 		tracker.takeTime("add", TimeEntry.Type.received);
 
 		tracker.takeTime("join", TimeEntry.Type.invoke);
-		nodeS.joinFetchAsNeeded(nodeR.getRmiName(), nodeR.getPort(), columnR, columnS);
+		nodeS.joinFetchAsNeeded(nodeR.getRmiName(), nodeR.getPort());
+		tracker.takeTime("join", TimeEntry.Type.received);
+
+		tracker.takeTime("getjoined", TimeEntry.Type.invoke);
+		Relation joined = nodeS.getJoined();
+		tracker.takeTime("getjoined", TimeEntry.Type.received);
+
+		return joined;
+	}
+
+	public Relation joinSemiVersion1(Relation r, Relation s) throws RemoteException {
+		if (nodes == null || nodes.size() < 2) {
+			throw new RuntimeException("not enought nodes to do that");
+		}
+
+		INode nodeS = nodes.get(0);
+		INode nodeR = nodes.get(1);
+
+		// set up nodes
+		tracker.takeTime("add", TimeEntry.Type.invoke);
+		nodeR.add(r);
+		tracker.takeTime("add", TimeEntry.Type.received);
+
+		tracker.takeTime("add", TimeEntry.Type.invoke);
+		nodeS.add(s);
+		tracker.takeTime("add", TimeEntry.Type.received);
+
+		tracker.takeTime("join", TimeEntry.Type.invoke);
+		nodeR.joinSemiV1V2(nodeS.getRmiName(), nodeS.getPort());
+		tracker.takeTime("join", TimeEntry.Type.received);
+
+		tracker.takeTime("getjoined", TimeEntry.Type.invoke);
+		Relation joined = nodeR.getJoined();
+		tracker.takeTime("getjoined", TimeEntry.Type.received);
+
+		return joined;
+	}
+
+	public Relation joinSemiVersion2(Relation r, Relation s) throws RemoteException {
+		if (nodes == null || nodes.size() < 2) {
+			throw new RuntimeException("not enought nodes to do that");
+		}
+
+		INode nodeS = nodes.get(0);
+		INode nodeR = nodes.get(1);
+
+		// set up nodes
+		tracker.takeTime("add", TimeEntry.Type.invoke);
+		nodeR.add(r);
+		tracker.takeTime("add", TimeEntry.Type.received);
+
+		tracker.takeTime("add", TimeEntry.Type.invoke);
+		nodeS.add(s);
+		tracker.takeTime("add", TimeEntry.Type.received);
+
+		tracker.takeTime("join", TimeEntry.Type.invoke);
+		nodeS.joinSemiV1V2(nodeR.getRmiName(), nodeR.getPort());
 		tracker.takeTime("join", TimeEntry.Type.received);
 
 		tracker.takeTime("getjoined", TimeEntry.Type.invoke);
@@ -184,7 +247,7 @@ public class JoinServer extends UnicastRemoteObject implements IJoinServer {
 	public void printLastMeasurementsWithDetails() throws RemoteException {
 		for (int i = 0; i < measurements.size(); ++i) {
 			TimeEntry entry = measurements.get(i);
-			System.out.print(entry.getMessage() + ": "+entry.getType()+" - duration ");
+			System.out.print(entry.getMessage() + ": " + entry.getType() + " - duration ");
 
 			if (i > 0) {
 				TimeEntry entryBefore = measurements.get(i - 1);
@@ -197,5 +260,6 @@ public class JoinServer extends UnicastRemoteObject implements IJoinServer {
 		}
 		System.out.println("------------------------------------------");
 		this.printLastMeasurements();
+		this.clear();
 	}
 }

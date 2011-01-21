@@ -51,26 +51,16 @@ public class Node extends UnicastRemoteObject implements INode {
 	}
 
 	@Override
+	public void clear() throws RemoteException {
+		relations = new ArrayList<Relation>();
+		counter = 0;
+	}
+
+	@Override
 	public void add(Relation r) throws RemoteException {
 		tracker.takeTime("add", Type.get);
 		relations.add(r);
 		tracker.takeTime("add", Type.replay);
-	}
-
-	/*
-	 * join method for "ship whole" mode
-	 */
-	@Override
-	public void joinShipWhole(Relation r, String columnR, String columnS)
-			throws RemoteException {
-		tracker.takeTime("join", Type.get);
-		if (relations == null || relations.isEmpty()
-				|| relations.get(0).hasColumn(columnS) == false) {
-			throw new RuntimeException("can't join this");
-		}
-		NestedLoopJoin join = new NestedLoopJoin();
-		this.joined = join.join(r, relations.get(0), columnR, columnS);
-		tracker.takeTime("join", Type.replay);
 	}
 
 	@Override
@@ -80,20 +70,59 @@ public class Node extends UnicastRemoteObject implements INode {
 		return this.joined;
 	}
 
+	/*
+	 * join method for "ship whole" mode
+	 */
 	@Override
-	public void joinFetchAsNeeded(String nodeName, int port, String columnR, String columnS) throws RemoteException {
+	public void joinShipWhole(Relation r)
+			throws RemoteException {
 		tracker.takeTime("join", Type.get);
-		if (relations == null || relations.isEmpty()
-				|| relations.get(0).hasColumn(columnS) == false) {
+		if (relations == null || relations.isEmpty()) {
 			throw new RuntimeException("can't join this");
 		}
-		INode node = getNode(nodeName);
+		NestedLoopJoin join = new NestedLoopJoin();
+		this.joined = join.join(r, relations.get(0));
+		tracker.takeTime("join", Type.replay);
+	}
+
+	@Override
+	public void joinSemiV1V2(String rmiName, int port) throws RemoteException {
+		tracker.takeTime("join", Type.get);
+		if (relations == null || relations.isEmpty()) {
+			throw new RuntimeException("can't join this");
+		}
+		INode node = getNode(rmiName);
 		if (node == null) {
-			throw new RuntimeException("no node with name " + nodeName);
+			throw new RuntimeException("no node with name " + rmiName);
+		}
+		SemiJoinV1V2 join = new SemiJoinV1V2(tracker);
+		this.joined = join.join(node, relations.get(0));
+		tracker.takeTime("join", Type.replay);
+	}
+
+	@Override
+	public void joinFetchAsNeeded(String rmiName, int port) throws RemoteException {
+		tracker.takeTime("join", Type.get);
+		if (relations == null || relations.isEmpty()) {
+			throw new RuntimeException("can't join this");
+		}
+		INode node = getNode(rmiName);
+		if (node == null) {
+			throw new RuntimeException("no node with name " + rmiName);
 		}
 		FetchAsNeededJoin join = new FetchAsNeededJoin(tracker);
-		this.joined = join.join(node, relations.get(0), columnR, columnS);
+		this.joined = join.join(node, relations.get(0));
 		tracker.takeTime("join", Type.replay);
+	}
+
+	@Override
+	public Relation semiJoinWith(Relation joinRelation) throws RemoteException {
+		NestedLoopJoin join = new NestedLoopJoin();
+		this.joined = join.join(
+				joinRelation,
+				relations.get(0));
+		this.joined.setName("semi joined");
+		return joined;
 	}
 
 	@Override

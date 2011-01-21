@@ -5,8 +5,12 @@
 package de.uniluebeck.ifis.mvdbproject.joins.shared;
 
 import java.io.Serializable;
+import java.lang.String;
+import java.lang.String;
+import java.util.ArrayList;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.List;
 
 /**
@@ -90,5 +94,38 @@ public class Relation implements Serializable{
 
 	public int getRowCount() {
 		return this.rows.size();
+	}
+
+	public String findSameColumn(Relation s) {
+		return findSameColumn(s.getColumnNames());
+	}
+
+	public void filterDoubles() {
+		for (int i = 0; i < columnNames.size(); ++i) {
+			String name = columnNames.get(i);
+			if (columnNames.lastIndexOf(name) != i) {
+				removeColumnFromRows(i);
+				columnNames.remove(i);
+				filterDoubles();
+				return;
+			}
+		}
+	}
+
+	private void removeColumnFromRows(int i) {
+		for (List<String> row : rows) {
+			row.remove(i);
+		}
+	}
+
+	public String findSameColumn(List<String> columnNames) {
+		for (String mycol : this.columnNames) {
+			for (String yourcol : columnNames) {
+				if (mycol.equals(yourcol)) {
+					return mycol;
+				}
+			}
+		}
+		throw new RuntimeException("found no column");
 	}
 }
