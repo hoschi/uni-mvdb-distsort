@@ -44,4 +44,14 @@ public interface INode extends Remote {
 	public void joinSemiV1V2(String rmiName, int port) throws RemoteException;
 
 	public Relation semiJoinWith(Relation joinRelation) throws RemoteException;
+
+	public void joinSemiV3(String rmiNameR, int portR, String rmiNameS, int portS) throws RemoteException;
+
+	public String findSameColumn(List<String> columnNames) throws RemoteException;
+
+	public void startSemiJoinV3(INode nodeS, String column) throws RemoteException;
+
+	public Relation getSemiJoinedRelationV3() throws RemoteException;
+
+	public Relation projectTo(String column) throws RemoteException;
 }

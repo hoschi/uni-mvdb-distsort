@@ -20,7 +20,6 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
@@ -33,16 +32,43 @@ import java.util.logging.Logger;
  */
 public class Node extends UnicastRemoteObject implements INode {
 
-	List<Relation> relations;
-	Relation joined;
+	private class Fetcher implements Runnable {
+
+		Node node;
+		INode otherNode;
+		String column;
+
+		public Fetcher(Node node, INode otherNode, String column) {
+			this.node = node;
+			this.otherNode = otherNode;
+			this.column = column;
+		}
+
+		@Override
+		public void run() {
+			try {
+				node.relationSemiJoined = otherNode.projectTo(column);
+			} catch (RemoteException ex) {
+				Logger.getLogger(Node.class.getName()).log(Level.SEVERE, null, ex);
+			}
+			node.state = State.running;
+		}
+	}
+	Relation relation, joined, relationSemiJoined;
 	String rmiName;
 	boolean bound;
 	int counter;
 	TimeTracker tracker;
 	int port;
 
+	enum State {
+
+		waiting, running
+	};
+	State state;
+
 	public Node(TimeTracker tracker) throws RemoteException {
-		relations = new ArrayList<Relation>();
+		state = State.running;
 		this.rmiName = UUID.randomUUID().toString();
 		bound = false;
 		counter = 0;
@@ -52,14 +78,14 @@ public class Node extends UnicastRemoteObject implements INode {
 
 	@Override
 	public void clear() throws RemoteException {
-		relations = new ArrayList<Relation>();
+		relation = null;
 		counter = 0;
 	}
 
 	@Override
 	public void add(Relation r) throws RemoteException {
 		tracker.takeTime("add", Type.get);
-		relations.add(r);
+		relation = r;
 		tracker.takeTime("add", Type.replay);
 	}
 
@@ -77,33 +103,18 @@ public class Node extends UnicastRemoteObject implements INode {
 	public void joinShipWhole(Relation r)
 			throws RemoteException {
 		tracker.takeTime("join", Type.get);
-		if (relations == null || relations.isEmpty()) {
+		if (relation == null) {
 			throw new RuntimeException("can't join this");
 		}
 		NestedLoopJoin join = new NestedLoopJoin();
-		this.joined = join.join(r, relations.get(0));
-		tracker.takeTime("join", Type.replay);
-	}
-
-	@Override
-	public void joinSemiV1V2(String rmiName, int port) throws RemoteException {
-		tracker.takeTime("join", Type.get);
-		if (relations == null || relations.isEmpty()) {
-			throw new RuntimeException("can't join this");
-		}
-		INode node = getNode(rmiName);
-		if (node == null) {
-			throw new RuntimeException("no node with name " + rmiName);
-		}
-		SemiJoinV1V2 join = new SemiJoinV1V2(tracker);
-		this.joined = join.join(node, relations.get(0));
+		this.joined = join.join(r, relation);
 		tracker.takeTime("join", Type.replay);
 	}
 
 	@Override
 	public void joinFetchAsNeeded(String rmiName, int port) throws RemoteException {
 		tracker.takeTime("join", Type.get);
-		if (relations == null || relations.isEmpty()) {
+		if (relation == null) {
 			throw new RuntimeException("can't join this");
 		}
 		INode node = getNode(rmiName);
@@ -111,8 +122,68 @@ public class Node extends UnicastRemoteObject implements INode {
 			throw new RuntimeException("no node with name " + rmiName);
 		}
 		FetchAsNeededJoin join = new FetchAsNeededJoin(tracker);
-		this.joined = join.join(node, relations.get(0));
+		this.joined = join.join(node, relation);
 		tracker.takeTime("join", Type.replay);
+	}
+
+	@Override
+	public void joinSemiV1V2(String rmiName, int port) throws RemoteException {
+		tracker.takeTime("join", Type.get);
+		if (relation == null) {
+			throw new RuntimeException("can't join this");
+		}
+		INode node = getNode(rmiName);
+		if (node == null) {
+			throw new RuntimeException("no node with name " + rmiName);
+		}
+		SemiJoinV1V2 join = new SemiJoinV1V2(tracker);
+		this.joined = join.join(node, relation);
+		tracker.takeTime("join", Type.replay);
+	}
+
+	@Override
+	public void joinSemiV3(String rmiNameR, int portR, String rmiNameS, int portS) throws RemoteException {
+		tracker.takeTime("join", Type.get);
+
+		INode nodeR = getNode(rmiNameR);
+		INode nodeS = getNode(rmiNameS);
+		if (nodeR == null) {
+			throw new RuntimeException("no node with name " + rmiNameR);
+		}
+		if (nodeS == null) {
+			throw new RuntimeException("no node with name " + rmiNameS);
+		}
+
+		SemiJoinV3 join = new SemiJoinV3(tracker);
+		this.joined = join.join(nodeR, nodeS);
+		tracker.takeTime("join", Type.replay);
+	}
+
+	@Override
+	public void startSemiJoinV3(INode node, String column) throws RemoteException {
+		tracker.takeTime("start", Type.get, true);
+		state = State.waiting;
+		Fetcher fetcher = new Fetcher(this, node, column);
+		Thread t = new Thread(fetcher);
+		t.start();
+		tracker.takeTime("start", Type.replay, true);
+	}
+
+	@Override
+	public Relation getSemiJoinedRelationV3() throws RemoteException {
+		tracker.takeTime("semi join", Type.get, true);
+		while (state != State.running) {
+			System.out.print(".");// wait
+			try {
+				Thread.currentThread().sleep(1);
+			} catch (InterruptedException ex) {
+				Logger.getLogger(Node.class.getName()).log(Level.SEVERE, null, ex);
+			}
+		}
+		System.out.println();
+		Relation semiJoinWith = semiJoinWith(relationSemiJoined);
+		tracker.takeTime("semi join", Type.replay, true);
+		return semiJoinWith;
 	}
 
 	@Override
@@ -120,32 +191,46 @@ public class Node extends UnicastRemoteObject implements INode {
 		NestedLoopJoin join = new NestedLoopJoin();
 		this.joined = join.join(
 				joinRelation,
-				relations.get(0));
+				relation);
 		this.joined.setName("semi joined");
+		this.joined.filterDoubleRows();
 		return joined;
 	}
 
 	@Override
-	public int columnIndex(String columnR) {
-		if (relations == null || relations.isEmpty()) {
+	public String findSameColumn(List<String> columnNames) throws RemoteException {
+		if (relation == null) {
 			throw new RuntimeException("no relation attached");
 		}
-		return this.relations.get(0).columnIndex(columnR);
+		return this.relation.findSameColumn(columnNames);
+	}
+
+	@Override
+	public Relation projectTo(String column) throws RemoteException {
+		return this.relation.projectTo(column);
+	}
+
+	@Override
+	public int columnIndex(String columnR) {
+		if (relation == null) {
+			throw new RuntimeException("no relation attached");
+		}
+		return this.relation.columnIndex(columnR);
 	}
 
 	@Override
 	public List<String> getColumnNames() {
-		if (relations == null || relations.isEmpty()) {
+		if (relation == null) {
 			throw new RuntimeException("no relation attached");
 		}
-		return this.relations.get(0).getColumnNames();
+		return this.relation.getColumnNames();
 	}
 
 	@Override
 	public boolean hasNext() throws RemoteException {
-		if (relations == null || relations.isEmpty()) {
+		if (relation == null) {
 			throw new RuntimeException("no relation attached");
-		} else if (this.counter >= relations.get(0).getRowCount()) {
+		} else if (this.counter >= relation.getRowCount()) {
 			return false;
 		} else {
 			return true;
@@ -155,10 +240,10 @@ public class Node extends UnicastRemoteObject implements INode {
 	@Override
 	public List<String> next() throws RemoteException {
 		tracker.takeTime("get row", Type.get, true);
-		if (relations == null || relations.isEmpty()) {
+		if (relation == null) {
 			throw new RuntimeException("no relation attached");
 		} else {
-			List<String> row = this.relations.get(0).getRow(this.counter);
+			List<String> row = this.relation.getRow(this.counter);
 			counter++;
 			//System.out.println("row -> " + row.toString());
 			tracker.takeTime("get row", Type.replay, true);

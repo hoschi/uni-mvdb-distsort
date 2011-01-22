@@ -59,19 +59,4 @@ abstract class AJoin {
 		}
 		this.joined.addRow(newRow);
 	}
-
-	protected Relation projectTo(Relation s, String columnS) {
-		int index = s.columnIndex(columnS);
-		Relation ret = new Relation("project to " + columnS);
-		ret.addColumn(columnS);
-
-		List<String> myrow;
-		for (List<String> row : s.getRows()) {
-			myrow = new ArrayList<String>();
-			myrow.add(row.get(index));
-			ret.addRow(myrow);
-		}
-		return ret;
-	}
-
 }

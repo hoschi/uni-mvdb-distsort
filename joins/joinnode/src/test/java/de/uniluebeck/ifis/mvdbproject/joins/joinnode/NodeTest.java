@@ -52,35 +52,45 @@ public class NodeTest {
 		row.add("1");
 		row.add("1");
 		r.addRow(row);
-		s.addRow(row);
 		row.clear();
 
 		row.add("2");
 		row.add("2");
 		r.addRow(row);
-		s.addRow(row);
 		row.clear();
 
-		// add rows that don't join
-		row.add("3");
+		row.add("10");
+		row.add("2");
+		r.addRow(row);
+		row.clear();
+
+		row.add("1");
 		row.add("-1");
 		r.addRow(row);
 		row.clear();
 
+
+		row.add("1");
+		row.add("1");
+		s.addRow(row);
+		row.clear();
+
+		row.add("10");
+		row.add("1");
+		s.addRow(row);
+		row.clear();
+
 		row.add("3");
+		row.add("2");
+		s.addRow(row);
+		row.clear();
+
+		row.add("1");
 		row.add("-2");
 		s.addRow(row);
 		row.clear();
 
-		row.add("4");
-		row.add("-3");
-		r.addRow(row);
-		row.clear();
 
-		row.add("4");
-		row.add("-4");
-		s.addRow(row);
-		row.clear();
 
 		joined = new Relation("joined");
 		joined.addColumn("a");
@@ -93,9 +103,22 @@ public class NodeTest {
 		joined.addRow(row);
 		row.clear();
 
+		row.add("1");
+		row.add("10");
+		row.add("1");
+		joined.addRow(row);
+		row.clear();
+
 		row.clear();
 		row.add("2");
+		row.add("3");
 		row.add("2");
+		joined.addRow(row);
+		row.clear();
+
+		row.clear();
+		row.add("10");
+		row.add("3");
 		row.add("2");
 		joined.addRow(row);
 		row.clear();
@@ -118,7 +141,8 @@ public class NodeTest {
 		instance.add(s);
 		instance.joinShipWhole(r);
 		Relation test = instance.getJoined();
-		assertArrayEquals(joined.toArray(), test.toArray());
+
+		assertListEquals(joined.getRows(), test.getRows());
 	}
 
 	@Test
@@ -136,12 +160,12 @@ public class NodeTest {
 		instance.add(s);
 		instance.joinFetchAsNeeded(nodeR.getRmiName(), nodeR.getPort());
 		Relation test = instance.getJoined();
-		assertArrayEquals(joined.toArray(), test.toArray());
+		assertListEquals(joined.getRows(), test.getRows());
 	}
 
 	@Test
 	public void testSemiJoinV1V2() throws Exception {
-		System.out.println("fetch as needed test");
+		System.out.println("semi join v1 and v3 test");
 		IJoinServer server = createMock(IJoinServer.class);
 
 		server.addMeasurment((TimeEntry) anyObject());
@@ -154,6 +178,33 @@ public class NodeTest {
 		instance.add(s);
 		instance.joinSemiV1V2(nodeR.getRmiName(), nodeR.getPort());
 		Relation test = instance.getJoined();
-		assertArrayEquals(joined.toArray(), test.toArray());
+		assertListEquals(joined.getRows(), test.getRows());
+	}
+
+	@Test
+	public void testSemiJoinV3() throws Exception {
+		System.out.println("semi join v3 test");
+		IJoinServer server = createMock(IJoinServer.class);
+
+		server.addMeasurment((TimeEntry) anyObject());
+		expectLastCall().anyTimes();
+
+		TimeTracker tracker = new TimeTracker(server);
+		Node instance = new Node(tracker);
+		Node nodeR = new Node(tracker);
+		Node nodeS = new Node(tracker);
+		nodeR.add(r);
+		nodeS.add(s);
+		instance.joinSemiV3(nodeR.getRmiName(), nodeR.getPort(),
+				nodeS.getRmiName(), nodeS.getPort());
+		Relation test = instance.getJoined();
+		assertListEquals(joined.getRows(), test.getRows());
+	}
+
+	private void assertListEquals(List<List<String>> expected, List<List<String>> given) {
+		assertEquals(expected.size(), given.size());
+		for (List<String> row : given) {
+			assertTrue(expected.contains(row));
+		}
 	}
 }

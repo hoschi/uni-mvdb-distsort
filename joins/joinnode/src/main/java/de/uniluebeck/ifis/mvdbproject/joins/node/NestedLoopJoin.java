@@ -41,7 +41,7 @@ public class NestedLoopJoin extends AJoin {
 			}
 		}
 
-		joined.filterDoubles();
+		joined.filterDoubleColumns();
 		return joined;
 	}
 }

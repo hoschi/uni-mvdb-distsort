@@ -54,7 +54,7 @@ class FetchAsNeededJoin extends AJoin {
 			}
 			node.resetIterator();
 		}
-		joined.filterDoubles();
+		joined.filterDoubleColumns();
 		return joined;
 	}
 }

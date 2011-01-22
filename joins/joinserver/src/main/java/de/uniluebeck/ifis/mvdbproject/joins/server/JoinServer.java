@@ -151,6 +151,36 @@ public class JoinServer extends UnicastRemoteObject implements IJoinServer {
 		return joined;
 	}
 
+	public Relation joinSemiVersion3(Relation r, Relation s) throws RemoteException {
+		if (nodes == null || nodes.size() < 3) {
+			throw new RuntimeException("not enought nodes to do that");
+		}
+
+		INode nodeS = nodes.get(0);
+		INode nodeR = nodes.get(1);
+		INode nodeK = nodes.get(2);
+
+		// set up nodes
+		tracker.takeTime("add", TimeEntry.Type.invoke);
+		nodeR.add(r);
+		tracker.takeTime("add", TimeEntry.Type.received);
+
+		tracker.takeTime("add", TimeEntry.Type.invoke);
+		nodeS.add(s);
+		tracker.takeTime("add", TimeEntry.Type.received);
+
+		tracker.takeTime("join", TimeEntry.Type.invoke);
+		nodeK.joinSemiV3(nodeR.getRmiName(), nodeR.getPort(),
+				nodeS.getRmiName(), nodeS.getPort());
+		tracker.takeTime("join", TimeEntry.Type.received);
+
+		tracker.takeTime("getjoined", TimeEntry.Type.invoke);
+		Relation joined = nodeK.getJoined();
+		tracker.takeTime("getjoined", TimeEntry.Type.received);
+
+		return joined;
+	}
+
 	@Override
 	public void addMeasurment(TimeEntry entry) throws RemoteException {
 		measurements.add(entry);
@@ -242,6 +272,7 @@ public class JoinServer extends UnicastRemoteObject implements IJoinServer {
 			System.out.println(entry.getMessage() + " - duration " + entry.getDate().getTime() + " ms");
 		}
 		System.out.println("\nAll commulated traffic between server and nodes are " + traffic + " ms");
+		this.clear();
 	}
 
 	public void printLastMeasurementsWithDetails() throws RemoteException {
@@ -260,6 +291,5 @@ public class JoinServer extends UnicastRemoteObject implements IJoinServer {
 		}
 		System.out.println("------------------------------------------");
 		this.printLastMeasurements();
-		this.clear();
 	}
 }

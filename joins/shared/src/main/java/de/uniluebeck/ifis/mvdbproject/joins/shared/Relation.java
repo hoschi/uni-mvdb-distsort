@@ -6,18 +6,17 @@ package de.uniluebeck.ifis.mvdbproject.joins.shared;
 
 import java.io.Serializable;
 import java.lang.String;
-import java.lang.String;
-import java.util.ArrayList;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
-import java.util.List;
+import java.util.Set;
 
 /**
  *
  * @author hoschi
  */
-public class Relation implements Serializable{
+public class Relation implements Serializable {
 
 	private List<String> columnNames;
 	private List<List<String>> rows;
@@ -100,16 +99,30 @@ public class Relation implements Serializable{
 		return findSameColumn(s.getColumnNames());
 	}
 
-	public void filterDoubles() {
+	public void filterDoubleColumns() {
 		for (int i = 0; i < columnNames.size(); ++i) {
 			String name = columnNames.get(i);
 			if (columnNames.lastIndexOf(name) != i) {
 				removeColumnFromRows(i);
 				columnNames.remove(i);
-				filterDoubles();
+				filterDoubleColumns();
 				return;
 			}
 		}
+	}
+
+	public Relation projectTo(String column) {
+		int index = this.columnIndex(column);
+		Relation ret = new Relation("project to " + column);
+		ret.addColumn(column);
+
+		List<String> myrow;
+		for (List<String> row : this.getRows()) {
+			myrow = new ArrayList<String>();
+			myrow.add(row.get(index));
+			ret.addRow(myrow);
+		}
+		return ret;
 	}
 
 	private void removeColumnFromRows(int i) {
@@ -127,5 +140,15 @@ public class Relation implements Serializable{
 			}
 		}
 		throw new RuntimeException("found no column");
+	}
+
+	public void filterDoubleRows() {
+		Set<List<String>> set = new HashSet<List<String>>();
+		for (List<String> row : rows) {
+			set.add(row);
+		}
+
+		this.rows = new ArrayList<List<String>>();
+		this.rows.addAll(set);
 	}
 }

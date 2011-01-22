@@ -15,33 +15,39 @@ import java.util.List;
  *
  * @author hoschi
  */
-class SemiJoinV1V2 extends AJoin {
+class SemiJoinV3 extends AJoin {
 
 	TimeTracker tracker;
 
-	public SemiJoinV1V2(TimeTracker tracker) {
+	public SemiJoinV3(TimeTracker tracker) {
 		this.tracker = tracker;
 	}
 
-	Relation join(INode node, Relation s) throws RemoteException {
-		if (node == null || s == null) {
-			throw new RuntimeException("no nodes or relation");
-		}
+	Relation join(INode nodeR, INode nodeS) throws RemoteException {
 
-		String column = s.findSameColumn(node.getColumnNames());
+		String column = nodeR.findSameColumn(nodeS.getColumnNames());
 
-		initJoined(node.getColumnNames(), s);
-		int indexR = node.columnIndex(column);
-		int indexS = s.columnIndex(column);
+		initJoined(nodeR.getColumnNames(), nodeS.getColumnNames());
+		int indexR = nodeR.columnIndex(column);
+		int indexS = nodeS.columnIndex(column);
 
-		Relation shrinked = s.projectTo(column);
+		tracker.takeTime("start", Type.invoke, true);
+		nodeR.startSemiJoinV3(nodeS, column);
+		tracker.takeTime("start", Type.received, true);
+		tracker.takeTime("start", Type.invoke, true);
+		nodeS.startSemiJoinV3(nodeR, column);
+		tracker.takeTime("start", Type.received, true);
+
 		tracker.takeTime("semi join", Type.invoke, true);
-		Relation rSemi = node.semiJoinWith(shrinked);
+		Relation rSemi = nodeR.getSemiJoinedRelationV3();
 		tracker.takeTime("semi join", Type.received, true);
 
-		// join it
+		tracker.takeTime("semi join", Type.invoke, true);
+		Relation sSemi = nodeS.getSemiJoinedRelationV3();
+		tracker.takeTime("semi join", Type.received, true);
+
 		for (List<String> rowR : rSemi.getRows()) {
-			for (List<String> rowS : s.getRows()) {
+			for (List<String> rowS : sSemi.getRows()) {
 				String valueS = rowS.get(indexS);
 				String valueR = rowR.get(indexR);
 				if (valueR.equals(valueS)) {
@@ -49,6 +55,7 @@ class SemiJoinV1V2 extends AJoin {
 				}
 			}
 		}
+
 		joined.filterDoubleColumns();
 		return joined;
 	}
