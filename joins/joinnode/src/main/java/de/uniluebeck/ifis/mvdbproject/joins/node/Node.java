@@ -6,6 +6,7 @@ package de.uniluebeck.ifis.mvdbproject.joins.node;
 
 import de.uniluebeck.ifis.mvdbproject.joins.shared.INode;
 import de.uniluebeck.ifis.mvdbproject.joins.shared.Relation;
+import de.uniluebeck.ifis.mvdbproject.joins.shared.TimeEntry;
 import de.uniluebeck.ifis.mvdbproject.joins.shared.TimeEntry.Type;
 import de.uniluebeck.ifis.mvdbproject.joins.shared.TimeTracker;
 import java.io.IOException;
@@ -42,6 +43,7 @@ public class Node extends UnicastRemoteObject implements INode {
 			this.node = node;
 			this.otherNode = otherNode;
 			this.column = column;
+
 		}
 
 		@Override
@@ -54,12 +56,41 @@ public class Node extends UnicastRemoteObject implements INode {
 			node.state = State.running;
 		}
 	}
+
+	private class startSemiJoinV4thread extends Thread {
+
+		INode nodeR, nodeK, me;
+		String column;
+		TimeTracker tracker;
+
+		public startSemiJoinV4thread(TimeTracker tracker, INode nodeR, INode nodeK, INode me, String column) {
+			this.nodeR = nodeR;
+			this.nodeK = nodeK;
+			this.me = me;
+			this.column = column;
+			this.tracker = tracker;
+		}
+
+		@Override
+		public void run() {
+			try {
+				tracker.takeTime("sendSemiJoinedToNodeK", Type.invoke, true);
+				nodeR.sendSemiJoinedToNodeK(relation.projectTo(column), nodeK, me, column);
+				tracker.takeTime("sendSemiJoinedToNodeK", Type.received, true);
+			} catch (RemoteException ex) {
+				Logger.getLogger(Node.class.getName()).log(Level.SEVERE, null, ex);
+			}
+		}
+	}
+
+
 	Relation relation, joined, relationSemiJoined;
 	String rmiName;
 	boolean bound;
 	int counter;
 	TimeTracker tracker;
 	int port;
+	SemiJoinV4 semiJoinV4;
 
 	enum State {
 
@@ -74,6 +105,7 @@ public class Node extends UnicastRemoteObject implements INode {
 		counter = 0;
 		this.tracker = tracker;
 		this.port = Registry.REGISTRY_PORT;
+		semiJoinV4 = null;
 	}
 
 	@Override
@@ -145,6 +177,8 @@ public class Node extends UnicastRemoteObject implements INode {
 	public void joinSemiV3(String rmiNameR, int portR, String rmiNameS, int portS) throws RemoteException {
 		tracker.takeTime("join", Type.get);
 
+		this.joined = null;
+
 		INode nodeR = getNode(rmiNameR);
 		INode nodeS = getNode(rmiNameS);
 		if (nodeR == null) {
@@ -172,6 +206,7 @@ public class Node extends UnicastRemoteObject implements INode {
 	@Override
 	public Relation getSemiJoinedRelationV3() throws RemoteException {
 		tracker.takeTime("semi join", Type.get, true);
+		System.out.print("wait: ");// wait
 		while (state != State.running) {
 			System.out.print(".");// wait
 			try {
@@ -184,6 +219,90 @@ public class Node extends UnicastRemoteObject implements INode {
 		Relation semiJoinWith = semiJoinWith(relationSemiJoined);
 		tracker.takeTime("semi join", Type.replay, true);
 		return semiJoinWith;
+	}
+
+	@Override
+	public void joinSemiV4(String rmiNameR, int portR, String rmiNameS, int portS) throws RemoteException {
+		tracker.takeTime("join", Type.get);
+
+		INode nodeR = getNode(rmiNameR);
+		INode nodeS = getNode(rmiNameS);
+		bindNode();
+		INode nodeK = getNode(this.rmiName);
+
+		if (nodeR == null) {
+			throw new RuntimeException("no node with name " + rmiNameR);
+		}
+		if (nodeS == null) {
+			throw new RuntimeException("no node with name " + rmiNameS);
+		}
+		if (nodeK == null) {
+			throw new RuntimeException("no node with name " + rmiName);
+		}
+
+		this.semiJoinV4 = new SemiJoinV4(tracker, nodeR, nodeS, nodeK);
+		Thread t = new Thread(this.semiJoinV4);
+		t.run();
+		
+		this.joined = semiJoinV4.getJoined();
+		tracker.takeTime("join", Type.replay);
+	}
+
+	
+
+	@Override
+	public void startSemiJoinV4(INode nodeR, INode nodeK, String column) throws RemoteException {
+		tracker.takeTime("start", Type.get, true);
+		INode me = getNode(rmiName);
+		startSemiJoinV4thread t = new startSemiJoinV4thread(tracker, nodeR, nodeK, me, column);
+		t.start();
+		tracker.takeTime("start", Type.replay, true);
+	}
+
+	@Override
+	public void sendSemiJoinedToNodeK(Relation joinRelation, INode nodeK) throws RemoteException {
+		// this is for node S
+		tracker.takeTime("sendSemiJoinedToNodeK", Type.get, true);
+
+		Relation semiJoinWith = this.semiJoinWith(joinRelation);
+
+		tracker.takeTime("takeSemiJoinFromNode", TimeEntry.Type.invoke, true);
+		nodeK.takeSemiJoinFromNodeS(semiJoinWith);
+		tracker.takeTime("takeSemiJoinFromNode", TimeEntry.Type.received, true);
+
+		tracker.takeTime("sendSemiJoinedToNodeK", Type.replay, true);
+	}
+
+	@Override
+	public void sendSemiJoinedToNodeK(Relation joinRelation, INode nodeK, INode nodeS, String column) throws RemoteException {
+		// this is for node R
+		tracker.takeTime("sendSemiJoinedToNodeK", Type.get, true);
+
+		Relation semiJoinWith = this.semiJoinWith(joinRelation);
+
+		tracker.takeTime("takeSemiJoinFromNode", TimeEntry.Type.invoke, true);
+		nodeK.takeSemiJoinFromNodeR(semiJoinWith);
+		tracker.takeTime("takeSemiJoinFromNode", TimeEntry.Type.received, true);
+
+		tracker.takeTime("sendSemiJoinedToNodeK", Type.invoke, true);
+		nodeS.sendSemiJoinedToNodeK(relation.projectTo(column), nodeK);
+		tracker.takeTime("sendSemiJoinedToNodeK", Type.received, true);
+
+		tracker.takeTime("sendSemiJoinedToNodeK", Type.replay, true);
+	}
+
+	@Override
+	public void takeSemiJoinFromNodeR(Relation joined) throws RemoteException {
+		tracker.takeTime("takeSemiJoinFromNode", TimeEntry.Type.get);
+		semiJoinV4.setrSemi(joined);
+		tracker.takeTime("takeSemiJoinFromNode", TimeEntry.Type.replay);
+	}
+
+	@Override
+	public void takeSemiJoinFromNodeS(Relation joined) throws RemoteException {
+		tracker.takeTime("takeSemiJoinFromNode", TimeEntry.Type.get);
+		semiJoinV4.setsSemi(joined);
+		tracker.takeTime("takeSemiJoinFromNode", TimeEntry.Type.replay);
 	}
 
 	@Override

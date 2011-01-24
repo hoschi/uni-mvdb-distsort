@@ -70,6 +70,7 @@ public class Main {
 		joinSemiVersion1Test((JoinServer) server);
 		joinSemiVersion2Test((JoinServer) server);
 		joinSemiVersion3Test((JoinServer) server);
+		joinSemiVersion4Test((JoinServer) server);
 		 */
 		System.out.println("generate data");
 		generateR();
@@ -84,6 +85,7 @@ public class Main {
 		joinSemiVersion1((JoinServer) server);
 		joinSemiVersion2((JoinServer) server);
 		joinSemiVersion3((JoinServer) server);
+		joinSemiVersion4((JoinServer) server);
 
 	}
 
@@ -139,6 +141,22 @@ public class Main {
 		server.startMeasurements();
 
 		Relation test = server.joinSemiVersion3(r, s);
+		System.out.print(test.toString());
+		System.out.println();
+		System.out.println();
+		server.printLastMeasurementsWithDetails();
+
+		System.out.println("r has " + r.getRowCount() + " rows");
+		System.out.println("s has " + s.getRowCount() + " rows");
+		System.out.println("joined has " + test.getRowCount() + " rows");
+	}
+
+
+	private static void joinSemiVersion4Test(JoinServer server) throws RemoteException {
+		System.out.println("joinSemiVersion4Test");
+		server.startMeasurements();
+
+		Relation test = server.joinSemiVersion4(r, s);
 		System.out.print(test.toString());
 		System.out.println();
 		System.out.println();
@@ -232,6 +250,25 @@ public class Main {
 		System.out.println("s has " + s.getRowCount() + " rows");
 		System.out.println("joined has " + test.getRowCount() + " rows");
 		
+//		System.out.println(r.toString());
+//		System.out.println(s.toString());
+//		System.out.println(test.toString());
+	}
+
+
+	private static void joinSemiVersion4(JoinServer server) throws RemoteException {
+		System.out.println("=================================");
+		System.out.println("joinSemiVersion4");
+		System.out.println("=================================");
+		server.startMeasurements();
+
+		Relation test = server.joinSemiVersion4(r, s);
+		server.printLastMeasurements();
+
+		System.out.println("r has " + r.getRowCount() + " rows");
+		System.out.println("s has " + s.getRowCount() + " rows");
+		System.out.println("joined has " + test.getRowCount() + " rows");
+
 //		System.out.println(r.toString());
 //		System.out.println(s.toString());
 //		System.out.println(test.toString());

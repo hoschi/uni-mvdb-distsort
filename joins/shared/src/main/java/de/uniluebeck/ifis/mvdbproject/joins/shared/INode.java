@@ -54,4 +54,16 @@ public interface INode extends Remote {
 	public Relation getSemiJoinedRelationV3() throws RemoteException;
 
 	public Relation projectTo(String column) throws RemoteException;
+
+	public void joinSemiV4(String rmiNameR, int portR, String rmiNameS, int portS) throws RemoteException;
+
+	public void startSemiJoinV4(INode nodeR, INode nodeK, String column) throws RemoteException;
+
+	public void sendSemiJoinedToNodeK(Relation joinRelation, INode nodeK) throws RemoteException;
+
+	public void sendSemiJoinedToNodeK(Relation joinRelation, INode nodeK, INode nodeS, String column) throws RemoteException;
+
+	public void takeSemiJoinFromNodeS(Relation joined) throws RemoteException;
+
+	public void takeSemiJoinFromNodeR(Relation joined) throws RemoteException;
 }

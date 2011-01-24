@@ -5,6 +5,7 @@
 
 package de.uniluebeck.ifis.mvdbproject.joins.joinnode;
 
+import org.junit.Ignore;
 import de.uniluebeck.ifis.mvdbproject.joins.shared.TimeTracker;
 import de.uniluebeck.ifis.mvdbproject.joins.node.Node;
 import de.uniluebeck.ifis.mvdbproject.joins.shared.IJoinServer;
@@ -196,6 +197,27 @@ public class NodeTest {
 		nodeR.add(r);
 		nodeS.add(s);
 		instance.joinSemiV3(nodeR.getRmiName(), nodeR.getPort(),
+				nodeS.getRmiName(), nodeS.getPort());
+		Relation test = instance.getJoined();
+		assertListEquals(joined.getRows(), test.getRows());
+	}
+
+	@Test
+	@Ignore // easymock can't work with threads :(
+	public void testSemiJoinV4() throws Exception {
+		System.out.println("semi join v4 test");
+		IJoinServer server = createMock(IJoinServer.class);
+		TimeTracker tracker = createMock(TimeTracker.class);
+
+		tracker.takeTime((String)anyObject(), (TimeEntry.Type) anyObject());
+		expectLastCall().anyTimes();
+
+		Node instance = new Node(tracker);
+		Node nodeR = new Node(tracker);
+		Node nodeS = new Node(tracker);
+		nodeR.add(r);
+		nodeS.add(s);
+		instance.joinSemiV4(nodeR.getRmiName(), nodeR.getPort(),
 				nodeS.getRmiName(), nodeS.getPort());
 		Relation test = instance.getJoined();
 		assertListEquals(joined.getRows(), test.getRows());

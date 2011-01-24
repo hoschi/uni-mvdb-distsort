@@ -48,4 +48,5 @@ public class TimeTracker {
 					type, stuff));
 		System.out.println(msg + ": " + type);
 	}
+
 }

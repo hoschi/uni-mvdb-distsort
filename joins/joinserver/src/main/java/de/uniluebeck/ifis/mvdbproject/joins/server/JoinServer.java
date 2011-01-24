@@ -14,7 +14,8 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -178,6 +179,45 @@ public class JoinServer extends UnicastRemoteObject implements IJoinServer {
 		Relation joined = nodeK.getJoined();
 		tracker.takeTime("getjoined", TimeEntry.Type.received);
 
+		return joined;
+	}
+
+	public Relation joinSemiVersion4(Relation r, Relation s) throws RemoteException {
+		if (nodes == null || nodes.size() < 3) {
+			throw new RuntimeException("not enought nodes to do that");
+		}
+
+		INode nodeS = nodes.get(0);
+		INode nodeR = nodes.get(1);
+		INode nodeK = nodes.get(2);
+
+		// set up nodes
+		tracker.takeTime("add", TimeEntry.Type.invoke);
+		nodeR.add(r);
+		tracker.takeTime("add", TimeEntry.Type.received);
+
+		tracker.takeTime("add", TimeEntry.Type.invoke);
+		nodeS.add(s);
+		tracker.takeTime("add", TimeEntry.Type.received);
+
+		tracker.takeTime("join", TimeEntry.Type.invoke);
+		nodeK.joinSemiV4(nodeR.getRmiName(), nodeR.getPort(),
+				nodeS.getRmiName(), nodeS.getPort());
+		tracker.takeTime("join", TimeEntry.Type.received);
+
+		Relation joined = null;
+		System.out.print("wait: ");// wait
+		while (joined == null) {
+			tracker.takeTime("getjoined", TimeEntry.Type.invoke);
+			joined = nodeK.getJoined();
+			tracker.takeTime("getjoined", TimeEntry.Type.received);
+			try {
+				Thread.currentThread().sleep(1);
+			} catch (InterruptedException ex) {
+				Logger.getLogger(JoinServer.class.getName()).log(Level.SEVERE, null, ex);
+			}
+		}
+		System.out.println();
 		return joined;
 	}
 
