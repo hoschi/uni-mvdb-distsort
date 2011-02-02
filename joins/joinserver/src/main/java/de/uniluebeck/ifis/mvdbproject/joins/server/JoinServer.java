@@ -26,6 +26,9 @@ public class JoinServer extends UnicastRemoteObject implements IJoinServer {
 	List<INode> nodes;
 	protected List<TimeEntry> measurements;
 	TimeTracker tracker;
+	private long joinDuration = -1;
+	private long overallDuration = -1;
+	private long networkDuration = -1;
 
 	public JoinServer() throws RemoteException {
 		this.nodes = new ArrayList<INode>();
@@ -67,7 +70,8 @@ public class JoinServer extends UnicastRemoteObject implements IJoinServer {
 		return joined;
 	}
 
-	public Relation joinFetchAsNeeded(Relation r, Relation s) throws RemoteException {
+	public Relation joinFetchAsNeeded(Relation r, Relation s) throws
+			RemoteException {
 		if (nodes == null || nodes.size() < 2) {
 			throw new RuntimeException("not enought nodes to do that");
 		}
@@ -96,7 +100,8 @@ public class JoinServer extends UnicastRemoteObject implements IJoinServer {
 		return joined;
 	}
 
-	public Relation joinSemiVersion1(Relation r, Relation s) throws RemoteException {
+	public Relation joinSemiVersion1(Relation r, Relation s) throws
+			RemoteException {
 		if (nodes == null || nodes.size() < 2) {
 			throw new RuntimeException("not enought nodes to do that");
 		}
@@ -124,7 +129,8 @@ public class JoinServer extends UnicastRemoteObject implements IJoinServer {
 		return joined;
 	}
 
-	public Relation joinSemiVersion2(Relation r, Relation s) throws RemoteException {
+	public Relation joinSemiVersion2(Relation r, Relation s) throws
+			RemoteException {
 		if (nodes == null || nodes.size() < 2) {
 			throw new RuntimeException("not enought nodes to do that");
 		}
@@ -152,7 +158,8 @@ public class JoinServer extends UnicastRemoteObject implements IJoinServer {
 		return joined;
 	}
 
-	public Relation joinSemiVersion3(Relation r, Relation s) throws RemoteException {
+	public Relation joinSemiVersion3(Relation r, Relation s) throws
+			RemoteException {
 		if (nodes == null || nodes.size() < 3) {
 			throw new RuntimeException("not enought nodes to do that");
 		}
@@ -182,7 +189,8 @@ public class JoinServer extends UnicastRemoteObject implements IJoinServer {
 		return joined;
 	}
 
-	public Relation joinSemiVersion4(Relation r, Relation s) throws RemoteException {
+	public Relation joinSemiVersion4(Relation r, Relation s) throws
+			RemoteException {
 		if (nodes == null || nodes.size() < 3) {
 			throw new RuntimeException("not enought nodes to do that");
 		}
@@ -214,7 +222,8 @@ public class JoinServer extends UnicastRemoteObject implements IJoinServer {
 			try {
 				Thread.currentThread().sleep(1);
 			} catch (InterruptedException ex) {
-				Logger.getLogger(JoinServer.class.getName()).log(Level.SEVERE, null, ex);
+				Logger.getLogger(JoinServer.class.getName()).log(Level.SEVERE,
+						null, ex);
 			}
 		}
 		System.out.println();
@@ -244,16 +253,16 @@ public class JoinServer extends UnicastRemoteObject implements IJoinServer {
 				continue;
 			}
 
-			if (current.getType().equals(TimeEntry.Type.invoke)
-					&& measurements.get(i + 1).getType().equals(TimeEntry.Type.get)) {
+			if (current.getType().equals(TimeEntry.Type.invoke) && measurements.
+					get(i + 1).getType().equals(TimeEntry.Type.get)) {
 				// merge into new typed entries
 				start = current.getDate().getTime();
 				end = measurements.get(i + 1).getDate().getTime();
 				traffic += end - start;
 			}
 
-			if (current.getType().equals(TimeEntry.Type.replay)
-					&& measurements.get(i + 1).getType().equals(TimeEntry.Type.received)) {
+			if (current.getType().equals(TimeEntry.Type.replay) && measurements.
+					get(i + 1).getType().equals(TimeEntry.Type.received)) {
 				// merge into new typed entries
 				start = current.getDate().getTime();
 				end = measurements.get(i + 1).getDate().getTime();
@@ -268,8 +277,8 @@ public class JoinServer extends UnicastRemoteObject implements IJoinServer {
 		for (int i = 0; i < measurements.size() - 1; ++i) {
 			TimeEntry current = measurements.get(i);
 
-			if (current.getType().equals(TimeEntry.Type.invoke)
-					&& measurements.get(i + 1).getType().equals(TimeEntry.Type.get)) {
+			if (current.getType().equals(TimeEntry.Type.invoke) && measurements.
+					get(i + 1).getType().equals(TimeEntry.Type.get)) {
 				// merge into new typed entries
 				start = current.getDate().getTime();
 				end = measurements.get(i + 1).getDate().getTime();
@@ -279,8 +288,8 @@ public class JoinServer extends UnicastRemoteObject implements IJoinServer {
 				traffic += end - start;
 			}
 
-			if (current.getType().equals(TimeEntry.Type.get)
-					&& measurements.get(i + 1).getType().equals(TimeEntry.Type.replay)) {
+			if (current.getType().equals(TimeEntry.Type.get) && measurements.get(i +
+					1).getType().equals(TimeEntry.Type.replay)) {
 				// merge into new typed entries
 				start = current.getDate().getTime();
 				end = measurements.get(i + 1).getDate().getTime();
@@ -289,8 +298,8 @@ public class JoinServer extends UnicastRemoteObject implements IJoinServer {
 						TimeEntry.Type.logic, false));
 			}
 
-			if (current.getType().equals(TimeEntry.Type.replay)
-					&& measurements.get(i + 1).getType().equals(TimeEntry.Type.received)) {
+			if (current.getType().equals(TimeEntry.Type.replay) && measurements.
+					get(i + 1).getType().equals(TimeEntry.Type.received)) {
 
 				// merge into new typed entries
 				start = current.getDate().getTime();
@@ -306,19 +315,32 @@ public class JoinServer extends UnicastRemoteObject implements IJoinServer {
 	}
 
 	public void printLastMeasurements() throws RemoteException {
-		long traffic = this.countNetworkTraffic();
+		overallDuration = this.countOverallDuration();
+		networkDuration = this.countNetworkTraffic();
+
+		// print messages
 		for (int i = 0; i < measurements.size(); ++i) {
 			TimeEntry entry = measurements.get(i);
-			System.out.println(entry.getMessage() + " - duration " + entry.getDate().getTime() + " ms");
+			long duration = entry.getDate().getTime();
+
+			if (entry.getMessage().startsWith("join")) {
+				joinDuration = duration;
+			}
+
+			System.out.println(entry.getMessage() + " - duration " + duration +
+					" ms");
 		}
-		System.out.println("\nAll commulated traffic between server and nodes are " + traffic + " ms");
+		System.out.println("\nAll commulated traffic between server and nodes are " +
+				networkDuration + " ms");
 		this.clear();
 	}
 
 	public void printLastMeasurementsWithDetails() throws RemoteException {
+
 		for (int i = 0; i < measurements.size(); ++i) {
 			TimeEntry entry = measurements.get(i);
-			System.out.print(entry.getMessage() + ": " + entry.getType() + " - duration ");
+			System.out.print(entry.getMessage() + ": " + entry.getType() +
+					" - duration ");
 
 			if (i > 0) {
 				TimeEntry entryBefore = measurements.get(i - 1);
@@ -331,5 +353,27 @@ public class JoinServer extends UnicastRemoteObject implements IJoinServer {
 		}
 		System.out.println("------------------------------------------");
 		this.printLastMeasurements();
+	}
+
+	public long getJoinDuration() {
+		return joinDuration;
+	}
+
+	public long getOverallDuration() {
+		return overallDuration;
+	}
+
+	public long getNetworkDuration() {
+		return networkDuration;
+	}
+
+	private long countOverallDuration() {
+		if (measurements.size() <= 0)
+			return 0;
+		else {
+			TimeEntry first = measurements.get(0);
+			TimeEntry last = measurements.get(measurements.size() - 1);
+			return last.getDate().getTime()-first.getDate().getTime();
+		}
 	}
 }

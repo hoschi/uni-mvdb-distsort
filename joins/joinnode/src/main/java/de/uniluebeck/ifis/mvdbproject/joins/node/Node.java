@@ -252,11 +252,11 @@ public class Node extends UnicastRemoteObject implements INode {
 
 	@Override
 	public void startSemiJoinV4(INode nodeR, INode nodeK, String column) throws RemoteException {
-		tracker.takeTime("start", Type.get, true);
+		tracker.takeTime("join", Type.get);
 		INode me = getNode(rmiName);
 		startSemiJoinV4thread t = new startSemiJoinV4thread(tracker, nodeR, nodeK, me, column);
 		t.start();
-		tracker.takeTime("start", Type.replay, true);
+		tracker.takeTime("join", Type.replay);
 	}
 
 	@Override

@@ -23,8 +23,9 @@ import java.util.logging.Logger;
  */
 public class Main {
 
-	static int rows = 1000;
-	static Relation r, s;
+	static String output = "\n\n\n\n";
+	static int rows = 10;
+	static Relation r,s;
 
 	public static void main(String[] args) throws RemoteException {
 		final IJoinServer server;
@@ -47,7 +48,7 @@ public class Main {
 
 		System.out.println("The server is running!");
 
-		if (args.length == 1) {
+		if (args.length >= 1) {
 			Integer i = new Integer(args[0]);
 
 			while (i > 0) {
@@ -59,6 +60,10 @@ public class Main {
 				}
 				--i;
 			}
+		}
+
+		if (args.length == 2) {
+			rows = new Integer(args[1]);
 		}
 		System.out.println("started");
 		/*
@@ -72,6 +77,7 @@ public class Main {
 		joinSemiVersion3Test((JoinServer) server);
 		joinSemiVersion4Test((JoinServer) server);
 		 */
+		
 		System.out.println("generate data");
 		generateR();
 		generateS();
@@ -81,12 +87,13 @@ public class Main {
 		System.out.println();
 
 		joinShipWhole((JoinServer) server);
-		//joinFetchAsNeeded((JoinServer) server);
+		joinFetchAsNeeded((JoinServer) server);
 		joinSemiVersion1((JoinServer) server);
 		joinSemiVersion2((JoinServer) server);
 		joinSemiVersion3((JoinServer) server);
 		joinSemiVersion4((JoinServer) server);
 
+		System.out.println(output);
 	}
 
 	private static void joinShipWholeTest(JoinServer server) throws RemoteException {
@@ -179,10 +186,18 @@ public class Main {
 		System.out.println("r has " + r.getRowCount() + " rows");
 		System.out.println("s has " + s.getRowCount() + " rows");
 		System.out.println("joined has " + test.getRowCount() + " rows");
+		
+		saveStats(server, "ship   ");
 
-//		System.out.println(r.toString());
-//		System.out.println(s.toString());
-//		System.out.println(test.toString());
+		//		System.out.println(r.toString());
+		//		System.out.println(s.toString());
+		//		System.out.println(test.toString());
+	}
+
+	private static void saveStats(JoinServer server, String method) {
+		output += method + " join: \t\t" + server.getJoinDuration() + "\n";
+		output += method + " network: \t" + server.getNetworkDuration() + "\n";
+		output += method + " all: \t\t" + server.getOverallDuration() + "\n\n";
 
 	}
 
@@ -194,6 +209,7 @@ public class Main {
 
 		Relation test = server.joinFetchAsNeeded(r, s);
 		server.printLastMeasurements();
+		saveStats(server, "fetch as needed");
 
 //		System.out.println("r has " + r.getRowCount() + " rows");
 //		System.out.println("s has " + s.getRowCount() + " rows");
@@ -214,6 +230,8 @@ public class Main {
 		System.out.println("s has " + s.getRowCount() + " rows");
 		System.out.println("joined has " + test.getRowCount() + " rows");
 
+		saveStats(server, "semi v1");
+
 //		System.out.println(r.toString());
 //		System.out.println(s.toString());
 //		System.out.println(test.toString());
@@ -232,6 +250,8 @@ public class Main {
 		System.out.println("s has " + s.getRowCount() + " rows");
 		System.out.println("joined has " + test.getRowCount() + " rows");
 
+		saveStats(server, "semi v2");
+
 //		System.out.println(r.toString());
 //		System.out.println(s.toString());
 //		System.out.println(test.toString());
@@ -249,7 +269,9 @@ public class Main {
 		System.out.println("r has " + r.getRowCount() + " rows");
 		System.out.println("s has " + s.getRowCount() + " rows");
 		System.out.println("joined has " + test.getRowCount() + " rows");
-		
+
+		saveStats(server, "semi v3");
+
 //		System.out.println(r.toString());
 //		System.out.println(s.toString());
 //		System.out.println(test.toString());
@@ -268,6 +290,8 @@ public class Main {
 		System.out.println("r has " + r.getRowCount() + " rows");
 		System.out.println("s has " + s.getRowCount() + " rows");
 		System.out.println("joined has " + test.getRowCount() + " rows");
+
+		saveStats(server, "semi v4");
 
 //		System.out.println(r.toString());
 //		System.out.println(s.toString());
